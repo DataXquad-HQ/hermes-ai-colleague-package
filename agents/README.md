@@ -6,6 +6,7 @@ Each subdirectory is a self-contained agent — everything needed to install, co
 
 | Agent | Role | Status |
 |-------|------|--------|
+| [iris](./iris/) | Chief of Staff — coordination, task board, GBrain, agent unblocking | ✅ Active |
 | [leo](./leo/) | BD Director — pipeline progression, account intelligence, partner management | ✅ Active |
 
 ## Structure
