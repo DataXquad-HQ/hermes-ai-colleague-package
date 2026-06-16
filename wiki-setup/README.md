@@ -1,51 +1,39 @@
 # Wiki Setup
 
-This directory contains the document templates that must be filled in before the agent team can operate effectively.
+This directory contains document templates that must be filled in before the agent team can operate effectively.
 
-These documents are the **context layer** — they tell agents like Leo who you are, who you're selling to, and how you measure success. Without them, agents cannot make qualified decisions.
-
----
+These are the **context layer** — they tell agents who you are, who you're selling to, and how you operate. Without them, agents fall back to generic behaviour with no company-specific anchors.
 
 ## Required Documents
 
-### `sales-strategy.md` ← **Fill this in first**
+Copy each template into your `dx-internal-wiki/context/` repo and fill it in.
 
-**What it is:** Sales & Partnership Strategy — the single input source for Leo's Pipeline Health Check.
+| Template | Copy to | Primary agent reader | Priority |
+|---|---|---|---|
+| `company-background.md` | `context/company-background.md` | All agents | First |
+| `team.md` | `context/team.md` | All agents | First |
+| `product-overview.md` | `context/product-overview.md` | Leo, Maya | First |
+| `sales-strategy.md` | `context/sales-strategy.md` | Leo | First |
+| `brand-messaging.md` | `context/brand-messaging.md` | Maya, Leo | Before content creation |
+| `key-contacts.md` | `context/key-contacts.md` | Leo, Iris | Before outreach |
 
-**Who fills it in:** Founders / Sales Lead
+## Setup Steps
 
-**When:** Before Leo runs his first Weekly Pipeline Health Check
-
-**What Leo does with it:**
-1. On first setup — extracts this document → stores in GBrain (structured) + Hindsight `dx-global` (semantic search)
-2. Every Weekly Health Check — recalls this as the anchor before analysing CRM data
-3. When the doc is updated — re-run extraction → GBrain / Hindsight auto-updates
-
-**Sections to fill:**
-1. Company Overview
-2. Sales Goals
-3. ICP (Ideal Customer Profile)
-4. Sales Strategy
-5. Partnership Goals
-6. Partnership Strategy
-7. Pipeline Benchmarks
-
----
-
-## How to Set Up
-
-1. Copy the templates from this directory into your company's `dx-internal-wiki/context/` repo
-2. Fill in each section — use `[brackets]` as placeholders where you don't have data yet
+1. Copy all templates into your `dx-internal-wiki/context/` directory
+2. Fill in each document — use `[brackets]` as placeholders where you don't have data yet
 3. Commit and push
-4. Tell Leo: "Extract the sales strategy from the wiki" — Leo will handle the rest
+4. Tell Iris: "Extract context from wiki" — Iris will load everything into GBrain
+5. Agents are now context-aware
 
----
+## What happens if you skip a document
 
-## What Happens If You Skip This
+| Missing | Impact |
+|---|---|
+| `company-background.md` | Agents have no company context — generic responses only |
+| `team.md` | Agents cannot route escalations or know who decides what |
+| `product-overview.md` | Leo cannot qualify leads against what you actually sell |
+| `sales-strategy.md` | Leo's Pipeline Health Check has no anchor — cannot flag stalls or mismatches |
+| `brand-messaging.md` | Maya's content may not match your brand voice |
+| `key-contacts.md` | Leo may treat high-sensitivity contacts incorrectly |
 
-Leo can still operate but will fall back to generic judgement with no company-specific anchors:
-- No ICP = Leo cannot qualify leads beyond surface-level signals
-- No pipeline benchmarks = Health Check cannot flag stalls relative to your cycle length
-- No sales goals = Leo cannot prioritise deals by strategic fit
-
-Fill in what you have. Partial data is better than none.
+Partial data is better than none. Fill in what you have and update over time.
