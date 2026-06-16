@@ -1,8 +1,8 @@
 # OpenMail API — Confirmed Behaviours (2026-06-16)
 
 ## Inbox ID
-Leo's inbox: `0527f34e-65ad-4a02-adbc-e7872a9a921e`
-Address: `leo-dx@openmail.sh`
+Leo's inbox: `{{OPENMAIL_INBOX_ID}}`
+Address: `{{AGENT_EMAIL}}`
 
 ## Mark Thread as Read
 - **Correct:** `PATCH /v1/threads/{thread_id}` with body `{"is_read": true}` → returns `{"ok": true}`

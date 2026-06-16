@@ -43,7 +43,7 @@ The only differences:
 ### Memory layers (two systems, different roles)
 - **GBrain** = structured, permanent 档案室 per company/opportunity. Timeline entries, facts, currentStatusSummary. Read via slug before engaging with an opportunity.
 - **Hindsight** = fast semantic recall for warm-up context before acting. Query:「這個案子上次的重點是什麼」. Both must be updated after every logged engagement — not optional.
-- Primary Hindsight bank for this skill: `dx-pipeline` (C5/C6 work).
+- Primary Hindsight bank for this skill: `{{ORG_PREFIX}}-pipeline` (C5/C6 work).
 
 ### Capability numbering (v13.0, updated 2026-06-15)
 C1 = Lead Capture (human-assisted onboarding from networking/events/referrals — no cold email)
@@ -74,7 +74,7 @@ No engagement status needed. Task covers all forward-looking obligations.
 
 ### Delivery channel
 All confirmations, clarifications, and daily briefings go to:
-**Lark group `[DX] Sales Daily Update`** (`oc_a5e03bcb6026a81a5a330b53c4e90575`)
+**Lark group `[DX] Sales Daily Update`** (`{{SALES_DAILY_UPDATE_CHANNEL_ID}}`)
 
 ---
 

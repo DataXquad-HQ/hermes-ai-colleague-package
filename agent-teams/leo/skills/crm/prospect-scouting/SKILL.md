@@ -59,8 +59,8 @@ Before analysing anyone, check what's available:
 
 ```python
 # ICP and strategy (graceful degrade if missing)
-mcp_gbrain_get_page(slug="wiki/dx-icp")
-mcp_gbrain_get_page(slug="wiki/dx-sales-strategy")
+mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-icp")
+mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-sales-strategy")
 
 # Relevant product wikis (load only the ones relevant to the focus area)
 mcp_gbrain_get_page(slug="wiki/products/[business-line]")
@@ -82,7 +82,7 @@ mcp_gbrain_get_page(slug="companies/[company-slug]", fuzzy=True)
 mcp_gbrain_query(query="[company name] relationship history")
 
 # Hindsight — any prior context?
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories/recall
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 {"query": "[company name]", "top_k": 3}
 ```
 
@@ -127,7 +127,7 @@ Score each company/person on:
 📊 **Summary**
 Total assessed: [N] | 必見: [N] | 值得聊: [N] | 略過: [N]
 
-[If ICP missing]: ⚠️ 無 ICP 文件，以現有 opportunity 歷史推斷。建議建立 `wiki/dx-icp` 以提升準確度。
+[If ICP missing]: ⚠️ 無 ICP 文件，以現有 opportunity 歷史推斷。建議建立 `wiki/{{ORG_PREFIX}}-icp` 以提升準確度。
 ```
 
 ---
@@ -143,7 +143,7 @@ When ICP document is unavailable, use these defaults based on known DX patterns:
 | **AquaOptima** | Water utilities, wastewater, irrigation, water treatment plants |
 | **Distify** | Distribution, FMCG, supply chain, route optimisation |
 | **TRACI** | Transport, fleet, traffic management |
-| **DataXquad** | Enterprise data, analytics, digital transformation |
+| **{{COMPANY_NAME}}** | Enterprise data, analytics, digital transformation |
 
 Geography priority (unless stated otherwise): Taiwan, Hong Kong, Malaysia, Southeast Asia.
 

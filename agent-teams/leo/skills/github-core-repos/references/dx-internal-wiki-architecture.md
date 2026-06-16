@@ -1,13 +1,13 @@
-# dx-internal-wiki Content Architecture
+# {{INTERNAL_WIKI_REPO}} Content Architecture
 
 ## What it is
 
-`dx-internal-wiki` is the human-readable Layer 1 of the DataXquad knowledge stack. Iris writes here after key decisions/conversations. Agents read via GBrain (Iris extracts and syncs).
+`{{INTERNAL_WIKI_REPO}}` is the human-readable Layer 1 of the {{COMPANY_NAME}} knowledge stack. Iris writes here after key decisions/conversations. Agents read via GBrain (Iris extracts and syncs).
 
 ## Directory Structure
 
 ```
-dx-internal-wiki/
+{{INTERNAL_WIKI_REPO}}/
 ├── README.md                   ← includes BusyCow relationship + three-layer flow diagram
 ├── agents/
 │   ├── README.md               ← delegation map + funnel ownership table
@@ -30,7 +30,7 @@ dx-internal-wiki/
 
 ## Document Template Pattern
 
-New installs: copy templates from `busycow-agent-package/wiki-setup/` into `context/`.
+New installs: copy templates from `{{AGENT_PACKAGE_REPO}}/wiki-setup/` into `context/`.
 
 Each template includes:
 - A header note explaining what it is and who uses it
@@ -62,7 +62,7 @@ Each agent ROLE.md follows this structure:
 ```
 Conversation (human + Iris)
     ↓ Iris writes after key decisions
-dx-internal-wiki (GitHub, human-readable)
+{{INTERNAL_WIKI_REPO}} (GitHub, human-readable)
     ↓ Iris extracts with mcp_gbrain_put_page / extract_facts
 GBrain (agent-queryable, daily operations)
     ↓ agents act on GBrain context

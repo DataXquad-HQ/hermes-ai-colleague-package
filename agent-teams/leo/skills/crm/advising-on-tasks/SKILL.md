@@ -15,7 +15,7 @@ triggers:
   - "幫我想一下這個"
   - "這個怎麼跟進"
 version: "1.0"
-author: DataXquad/Leo
+author: {{COMPANY_NAME}}/Leo
 ---
 
 # Task Advice
@@ -86,13 +86,13 @@ Run all three memory layers in parallel:
 
 **Hindsight — opportunity contextual memory:**
 ```
-POST /v1/default/banks/dx-pipeline/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 {"query": "[Company] opportunity — history, blockers, decision-maker, what worked", "top_k": 7}
 ```
 
 **Hindsight — company-level facts:**
 ```
-POST /v1/default/banks/dx-global/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-global/memories/recall
 {"query": "[Company] — key facts, product fit, stakeholders", "top_k": 3}
 ```
 
@@ -157,7 +157,7 @@ Format:
 Generic advice = "follow up and check in."
 Good advice = "They stalled because the CFO wasn't looped in. Lead with the ROI number from the Yilan case study — that's what moved Taiwan Water. Ask if it would help to get a 15-min intro call with our technical lead."
 
-**The advice is only as good as the context Leo has.** If dx-pipeline is empty for this opportunity, the advice will be shallow. This is why logging engagements is non-negotiable.
+**The advice is only as good as the context Leo has.** If {{ORG_PREFIX}}-pipeline is empty for this opportunity, the advice will be shallow. This is why logging engagements is non-negotiable.
 
 ---
 

@@ -13,7 +13,7 @@ triggers:
   - "今天要做什麼"
   - "daily briefing"
 version: "1.0"
-author: DataXquad/Leo
+author: {{COMPANY_NAME}}/Leo
 ---
 
 # Daily Reminder
@@ -162,9 +162,9 @@ For each rep:
 
 ### Step 3 — Recall context for AT_RISK opportunities
 
-For any task linked to an AT_RISK opportunity, recall from dx-pipeline:
+For any task linked to an AT_RISK opportunity, recall from {{ORG_PREFIX}}-pipeline:
 ```
-POST /v1/default/banks/dx-pipeline/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 {"query": "[Company] opportunity — current blocker and last interaction", "top_k": 3}
 ```
 Use this to write a better suggested approach.
@@ -175,7 +175,7 @@ Compose the reminder message and **push it mid-run** to the Sales Daily Update c
 
 ```
 Lark group: [DX] Sales Daily Update
-chat_id: oc_a5e03bcb6026a81a5a330b53c4e90575
+chat_id: {{SALES_DAILY_UPDATE_CHANNEL_ID}}
 ```
 
 Use `mcp_lark_im_v1_message_create` with `receive_id_type: chat_id` to send directly.
@@ -183,7 +183,7 @@ Do NOT rely on the cron's built-in `deliver` for this — it goes to the wrong c
 
 ### Step 5 — Ops log to Backend Report
 
-After the Sales message is sent, the cron's final response (auto-delivered by Hermes) goes to `[System] Backend Report` (`oc_8c3706de744958173c700d995ccfd4ef`).
+After the Sales message is sent, the cron's final response (auto-delivered by Hermes) goes to `[System] Backend Report` (`{{SYSTEM_BACKEND_CHANNEL_ID}}`).
 
 Format:
 ```
@@ -206,7 +206,7 @@ This is the ops log. Keep it structured and complete — every run should be aud
 
 ## Pitfalls
 
-- **Two-channel pattern — cron `deliver` is NOT the sales channel.** The cron `deliver` setting routes the final agent response (ops log) to `[System] Backend Report`. The sales briefing must be pushed mid-run via `mcp_lark_im_v1_message_create` to `[DX] Sales Daily Update` (`oc_a5e03bcb6026a81a5a330b53c4e90575`). If `deliver` is set to the sales channel, the ops log lands where humans read their briefing — wrong audience, wrong content.
+- **Two-channel pattern — cron `deliver` is NOT the sales channel.** The cron `deliver` setting routes the final agent response (ops log) to `[System] Backend Report`. The sales briefing must be pushed mid-run via `mcp_lark_im_v1_message_create` to `[DX] Sales Daily Update` (`{{SALES_DAILY_UPDATE_CHANNEL_ID}}`). If `deliver` is set to the sales channel, the ops log lands where humans read their briefing — wrong audience, wrong content.
 - **Don't include completed tasks.** Filter `status: { eq: TODO }` only.
 - **Don't exceed 10 per rep.** Closest deadlines always win.
 - **Always flag unreported meetings.** `[Log Interaction]` overdue = silent opportunity risk.
@@ -221,15 +221,15 @@ Run every weekday morning at 09:00 Taiwan time (01:00 UTC).
 
 ```
 cron: 0 1 * * 1-5
-deliver to: oc_a5e03bcb6026a81a5a330b53c4e90575  ([Sales] Daily Update)
+deliver to: {{SALES_DAILY_UPDATE_CHANNEL_ID}}  ([Sales] Daily Update)
 ```
 
 **Note:** Daily Reminder uses **two channels**:
-- **Sales message** — pushed mid-run via Lark API to `[DX] Sales Daily Update` (`oc_a5e03bcb6026a81a5a330b53c4e90575`). This is the human-facing briefing.
-- **Ops log** — auto-delivered by Hermes (cron `deliver`) to `[System] Backend Report` (`oc_8c3706de744958173c700d995ccfd4ef`). This is the audit trail.
+- **Sales message** — pushed mid-run via Lark API to `[DX] Sales Daily Update` (`{{SALES_DAILY_UPDATE_CHANNEL_ID}}`). This is the human-facing briefing.
+- **Ops log** — auto-delivered by Hermes (cron `deliver`) to `[System] Backend Report` (`{{SYSTEM_BACKEND_CHANNEL_ID}}`). This is the audit trail.
 
 Never send the ops log to the Sales channel, and never send the sales briefing to Backend Report.
 
-**CRM links in messages:** always use `https://sales.dataxquad.com/objects/[type]/[UUID]`, never `localhost:3001`.
+**CRM links in messages:** always use `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`, never `localhost:3001`.
 
 **Never hardcode team member names** in skill logic or cron prompts. Use "the Sales Rep" / "the team" / "all active reps".

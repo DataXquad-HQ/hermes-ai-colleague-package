@@ -47,17 +47,17 @@ import requests
 
 # Hindsight — goals and benchmarks
 goals = requests.post(
-    "http://localhost:8888/v1/default/banks/dx-global/memories/recall",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-global/memories/recall",
     json={"query": "revenue target and new customer goal", "top_k": 3}
 ).json()
 
 benchmarks = requests.post(
-    "http://localhost:8888/v1/default/banks/dx-global/memories/recall",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-global/memories/recall",
     json={"query": "pipeline benchmarks conversion rates stall threshold", "top_k": 3}
 ).json()
 
 icp = requests.post(
-    "http://localhost:8888/v1/default/banks/dx-global/memories/recall",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-global/memories/recall",
     json={"query": "ICP ideal customer profile target industries", "top_k": 2}
 ).json()
 ```
@@ -220,7 +220,7 @@ For each opportunity missing `amount` or `closeDate`:
 mutation {
   createTask(data: {
     title: "[補資料] [Opportunity name] — 請填入預估金額與預計成交日"
-    body: { markdown: "**Opportunity:** [name]\n\n**Missing:** [amount / closeDate / both]\n\n**Why it matters:** Leo cannot calculate pipeline coverage without this data. Please update in CRM.\n\nCRM: https://sales.dataxquad.com/objects/opportunities/[UUID]" }
+    body: { markdown: "**Opportunity:** [name]\n\n**Missing:** [amount / closeDate / both]\n\n**Why it matters:** Leo cannot calculate pipeline coverage without this data. Please update in CRM.\n\nCRM: {{CRM_EXTERNAL_URL}}/objects/opportunities/[UUID]" }
     status: TODO
     dueAt: "[tomorrow 09:00 CST]"
   }) { id }
@@ -290,13 +290,13 @@ Tasks created in CRM — please fill in by [tomorrow].
 
 ---
 
-## Step 8 — Write summary to Hindsight dx-pipeline
+## Step 8 — Write summary to Hindsight {{ORG_PREFIX}}-pipeline
 
 Store this week's snapshot for Strategy Check to reference:
 
 ```python
 requests.post(
-    "http://localhost:8888/v1/default/banks/dx-pipeline/memories",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories",
     json={"items": [{
         "content": f"Weekly Health Check [date]: status=[HEALTHY/WATCH/AT_RISK/CRITICAL]. Coverage=[N]x. Closed=[value]. Weighted pipeline=[value]. Stalled=[N]. AT_RISK=[N]. Key finding: [one sentence].",
         "tags": ["health-check", "weekly", "pipeline-snapshot", f"[YYYY-MM]"]
@@ -311,9 +311,9 @@ requests.post(
 | Channel | What goes here |
 |---|---|
 | `[Sales] Pipeline Review` (chat_id stored in `concepts/sales-strategy-meta` in GBrain once confirmed) | Full Health Report — weekly |
-| `[System] Backend Report` `oc_8c3706de744958173c700d995ccfd4ef` | Ops log — run stats, tasks created, errors |
+| `[System] Backend Report` `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Ops log — run stats, tasks created, errors |
 
-**CRM links always use** `https://sales.dataxquad.com/objects/[type]/[UUID]`.
+**CRM links always use** `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`.
 
 ---
 

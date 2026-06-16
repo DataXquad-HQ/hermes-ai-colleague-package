@@ -12,10 +12,10 @@ Auth: None (local)
 curl -X POST http://localhost:8888/v1/default/banks ...
 
 # ✅ CORRECT — use PUT with bank_id in the path
-curl -X PUT http://localhost:8888/v1/default/banks/dx-pipeline \
+curl -X PUT http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "DataXquad Pipeline Memory",
+    "name": "{{COMPANY_NAME}} Pipeline Memory",
     "mission": "Description of what this bank stores and why.",
     "disposition": {"skepticism": 3, "literalism": 3, "empathy": 3}
   }'
@@ -32,7 +32,7 @@ Returns array with `bank_id`, `name`, `fact_count`, `last_document_at`.
 ## Store a Memory
 
 ```bash
-curl -X POST http://localhost:8888/v1/default/banks/dx-pipeline/memories \
+curl -X POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories \
   -H "Content-Type: application/json" \
   -d '{
     "items": [{
@@ -45,7 +45,7 @@ curl -X POST http://localhost:8888/v1/default/banks/dx-pipeline/memories \
 ## Recall Memories (Semantic Search)
 
 ```bash
-curl -X POST http://localhost:8888/v1/default/banks/dx-pipeline/memories/recall \
+curl -X POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall \
   -H "Content-Type: application/json" \
   -d '{"query": "CompanyName opportunity — background and blockers", "top_k": 5}'
 ```
@@ -54,13 +54,13 @@ curl -X POST http://localhost:8888/v1/default/banks/dx-pipeline/memories/recall 
 
 ## Bank Design Decisions
 
-### Why `dx-pipeline` is a separate bank (not `dx-internal`)
+### Why `{{ORG_PREFIX}}-pipeline` is a separate bank (not `{{ORG_PREFIX}}-internal`)
 
-`dx-internal` is designed for cross-agent handoffs and team-level operational decisions.
-If Leo, Iris, Maya all write to `dx-internal`, opportunity-level context gets mixed with
+`{{ORG_PREFIX}}-internal` is designed for cross-agent handoffs and team-level operational decisions.
+If Leo, Iris, Maya all write to `{{ORG_PREFIX}}-internal`, opportunity-level context gets mixed with
 unrelated team ops — recall signal degrades.
 
-`dx-pipeline` is:
+`{{ORG_PREFIX}}-pipeline` is:
 - Opportunity-scoped: every entry is about a specific Opportunity or Partnership
 - Multi-agent readable (Leo writes, but any agent can recall)
 - Clean signal: only sales context, nothing else
@@ -69,10 +69,10 @@ unrelated team ops — recall signal degrades.
 
 | Bank | Facts | Purpose |
 |---|---|---|
-| `dx-pipeline` | 0 (new) | Opportunity contextual memory — C4/C5 primary bank |
-| `dx-global` | 54 | Company-level facts, portfolio, team structure |
-| `dx-human-hunter` | 12 | Hunter's style and priorities |
-| `dx-human-kevin` | 16 | Kevin's style and priorities |
+| `{{ORG_PREFIX}}-pipeline` | 0 (new) | Opportunity contextual memory — C4/C5 primary bank |
+| `{{ORG_PREFIX}}-global` | 54 | Company-level facts, portfolio, team structure |
+| `{{ORG_PREFIX}}-human-sales-rep` | 12 | Hunter's style and priorities |
+| `{{ORG_PREFIX}}-human-manager` | 16 | Kevin's style and priorities |
 | `dx-agent-iris` | 10 | Iris working memory |
-| `dx-agent-leo` | 0 | Leo private working memory |
-| `dx-internal` | 0 | Cross-agent team ops |
+| `{{ORG_PREFIX}}-agent-leo` | 0 | Leo private working memory |
+| `{{ORG_PREFIX}}-internal` | 0 | Cross-agent team ops |

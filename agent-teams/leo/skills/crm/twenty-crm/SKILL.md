@@ -1,6 +1,6 @@
 ---
 name: twenty-crm
-description: Query and mutate data in Twenty CRM (the DataXquad CRM system) — read pipeline, update records, create leads, manage contacts.
+description: Query and mutate data in Twenty CRM (the {{COMPANY_NAME}} CRM system) — read pipeline, update records, create leads, manage contacts.
 triggers:
   - "CRM"
   - "pipeline"
@@ -26,7 +26,7 @@ Load this skill whenever another skill or workflow needs to query or mutate data
 
 - **Always use "opportunity" not "deal"** — the CRM object is called `opportunities`. Never write "deal" or "deals" in any content, skill, or message. `dealType` is a field name — leave it as-is, but refer to the object itself as "opportunity".
 - **Never hardcode team member names** in skill logic, cron prompts, or message drafts. Use "the Sales Rep", "the team", "our BD team".
-- **CRM links in human-facing messages always use external URL** — `https://sales.dataxquad.com/objects/[type]/[UUID]`. Never expose `localhost:3001` in Lark messages or notifications.
+- **CRM links in human-facing messages always use external URL** — `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`. Never expose `localhost:3001` in Lark messages or notifications.
 - **Two-channel delivery pattern** — cron jobs with both a human-facing notification AND an ops log must: (1) push the human notification mid-run via `mcp_lark_im_v1_message_create`, (2) let Hermes auto-deliver the ops log via cron `deliver` to `[System] Backend Report`. Never set cron `deliver` to the human sales channel.
 
 ---
@@ -397,7 +397,7 @@ mutation UpdateField($input: UpdateOneFieldMetadataInput!) {
 - **Metadata `createOneField` not `createField`** — mutation name changed; `objectMetadataId` goes inside `field` not in `input`
 - **`UpdateOneFieldMetadataInput` does NOT have `objectMetadataId`** — only `id` + `update` are valid
 - **OutreachMessage body field is `body`, NOT `bodyV2`** — the custom object uses `body: { markdown: "..." }` (RichText). `bodyV2` does not exist on this object. Confirmed via introspection 2026-06-15.
-- **CRM links for humans use external URL** — `https://sales.dataxquad.com/objects/[type]/[UUID]`, never `localhost:3001`
+- **CRM links for humans use external URL** — `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`, never `localhost:3001`
 - Best pattern: write full script to `/mnt/disks/data/hermes/profiles/leo/workspace/`, run with `terminal python3 /path/script.py`
 - **`opportunity(id: "...")` throws "Argument not allowed: id"** — single-record lookup does NOT accept `id` as a direct argument. Use `opportunities(filter: { id: { eq: "UUID" } }) { edges { node { ... } } }` and take `edges[0]`
 - **`filter: { name: { like: "%partial%" } }` on opportunities is unreliable** — often returns empty even when records exist. Safer: list all with `opportunities(first: 100)` and filter by name in Python. Same applies to other objects.

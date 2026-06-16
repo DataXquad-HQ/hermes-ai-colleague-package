@@ -74,7 +74,7 @@ Then proceed exactly as Mode A for the contextual questions.
 | Decision role | Person.decisionRole | If relevant to an opportunity |
 
 ### Tier 3 — Contextual Memory (goes to Hindsight, not CRM fields)
-These go into `dx-pipeline` (if opportunity) or `dx-global` (company intel):
+These go into `{{ORG_PREFIX}}-pipeline` (if opportunity) or `{{ORG_PREFIX}}-global` (company intel):
 - What did you talk about at first meeting?
 - What's your read on this person — worth pursuing?
 - How does their company/role connect to DX's products?
@@ -131,7 +131,7 @@ Execute in order:
 2. Create Person linked to Company
 3. If Opportunity → create Opportunity (stage: NEW) linked to Person + Company
 4. If Partnership → create Partnership linked to Person + Company
-5. Write Hindsight memory (dx-pipeline if opportunity, dx-global if company intel)
+5. Write Hindsight memory ({{ORG_PREFIX}}-pipeline if opportunity, {{ORG_PREFIX}}-global if company intel)
 6. Write GBrain timeline entry on company page
 7. Create follow-up Task if needed (leadTier = NURTURE or OPPORTUNITY)
 
@@ -222,7 +222,7 @@ mutation {
 
 ### Hindsight — opportunity or nurture context
 ```
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 {
   "items": [{
     "content": "[Company] / [Person] — Met at [event], [date]. [What was discussed]. Sales Rep's read: [assessment]. Potential angle: [product/approach]. Next: [action].",

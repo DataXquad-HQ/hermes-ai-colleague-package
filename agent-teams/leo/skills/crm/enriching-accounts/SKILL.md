@@ -4,7 +4,7 @@ description: >
   C3 Account Intelligence — enrich company and contact context for Leads in CRM.
   Two modes: Level 1 (triggered after new Lead is created — foundational company
   profile) and Level 2 (monthly automated update — news, blog, recent developments).
-  Skips PASSERBY contacts. Writes to CRM, Hindsight dx-pipeline, and GBrain.
+  Skips PASSERBY contacts. Writes to CRM, Hindsight {{ORG_PREFIX}}-pipeline, and GBrain.
 triggers:
   - "enrich"
   - "account intelligence"
@@ -42,10 +42,10 @@ and the better we can customise each engagement.
 
 ## Cron Delivery
 
-Monthly cron `deliver` → `[System] Backend Report` (`oc_8c3706de744958173c700d995ccfd4ef`).
-If significant findings affect active opportunities, push a brief alert to `[Sales] Daily Update` (`oc_a5e03bcb6026a81a5a330b53c4e90575`) mid-run.
+Monthly cron `deliver` → `[System] Backend Report` (`{{SYSTEM_BACKEND_CHANNEL_ID}}`).
+If significant findings affect active opportunities, push a brief alert to `[Sales] Daily Update` (`{{SALES_DAILY_UPDATE_CHANNEL_ID}}`) mid-run.
 
-**CRM links in Lark messages always use:** `https://sales.dataxquad.com/objects/[type]/[UUID]`
+**CRM links in Lark messages always use:** `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`
 Never use `localhost:3001` in any human-facing output.
 
 ---
@@ -86,7 +86,7 @@ prepare for meetings, and make scouting decisions.
 **Relevance to DX:**
 - Which DX business line(s) could this company use?
 - What's the most likely pain point or use case?
-- ICP fit assessment (check `wiki/dx-icp` if exists)
+- ICP fit assessment (check `wiki/{{ORG_PREFIX}}-icp` if exists)
 
 **Key contacts (from CRM):**
 - For each Person linked to this company with leadTier ≠ PASSERBY:
@@ -108,9 +108,9 @@ mutation {
 }
 ```
 
-**Hindsight — dx-pipeline (if OPPORTUNITY tier) or dx-global (company intel):**
+**Hindsight — {{ORG_PREFIX}}-pipeline (if OPPORTUNITY tier) or {{ORG_PREFIX}}-global (company intel):**
 ```
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 {
   "items": [{
     "content": "[Company] — L1 enrich [date]. [Business description]. DX fit: [business line + use case]. Key contacts: [names/roles]. Source: [website/LinkedIn].",
@@ -195,9 +195,9 @@ mutation {
 }
 ```
 
-**Hindsight — dx-pipeline:**
+**Hindsight — {{ORG_PREFIX}}-pipeline:**
 ```
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 {
   "items": [{
     "content": "[Company] — L2 update [date]. [Summary of significant finding]. Implication for DX: [so what]. Source: [URL].",
@@ -275,8 +275,8 @@ Total active accounts monitored: [N]
 
 Before assessing DX fit for any company, check:
 ```python
-mcp_gbrain_get_page(slug="wiki/dx-icp")           # ICP definition
-mcp_gbrain_get_page(slug="wiki/dx-sales-strategy") # Sales strategy
+mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-icp")           # ICP definition
+mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-sales-strategy") # Sales strategy
 mcp_gbrain_get_page(slug="wiki/products/[line]")   # Relevant product wiki
 ```
 If pages don't exist: continue, infer from known opportunity patterns, flag ⚠️ in output.
@@ -305,10 +305,10 @@ ICP fit: [strong / moderate / weak / unknown — no ICP doc]
 
 **Written to:**
 - ✅ CRM: companyOverview + enrichmentOverview updated
-- ✅ Hindsight: dx-pipeline memory stored
+- ✅ Hindsight: {{ORG_PREFIX}}-pipeline memory stored
 - ✅ GBrain: [company-slug] page updated + timeline entry added
 
-[⚠️ No ICP document found — fit assessed from opportunity history. Consider building `wiki/dx-icp`.]
+[⚠️ No ICP document found — fit assessed from opportunity history. Consider building `wiki/{{ORG_PREFIX}}-icp`.]
 ```
 
 ---
@@ -320,6 +320,6 @@ ICP fit: [strong / moderate / weak / unknown — no ICP doc]
 - **lastEnrichedDate is the freshness gate** — always set it after enrichment. Monthly cron uses it to avoid redundant re-runs.
 - **Web search quality varies** — if web_search returns thin results, try web_extract on the company homepage directly. LinkedIn pages often have the clearest company descriptions.
 - **GBrain slug naming** — use lowercase hyphenated company name: `companies/acme-corp`, not `companies/Acme Corp`. Fuzzy match on get_page helps if slug is unknown.
-- **Hindsight bank choice** — OPPORTUNITY companies → `dx-pipeline`. General company intel with no active opportunity → `dx-global`.
+- **Hindsight bank choice** — OPPORTUNITY companies → `{{ORG_PREFIX}}-pipeline`. General company intel with no active opportunity → `{{ORG_PREFIX}}-global`.
 - **Level 2 significance filter is important** — don't flood Hindsight with noise. If in doubt, ask: "would the Sales Rep want to know this before their next call with this company?" If no, skip.
 - **Monthly cron dedup** — check `lastEnrichedDate` to avoid running twice in one month. Threshold: 25 days (not 30, to handle calendar variation).

@@ -1,7 +1,7 @@
 ---
 name: managing-tasks
 description: >
-  Create and update tasks in the DataXquad Task Tracker (Lark Base). Triages
+  Create and update tasks in the {{COMPANY_NAME}} Task Tracker (Lark Base). Triages
   multi-task dumps automatically — extracts every action item from a message,
   auto-assigns Initiative and Goal, and saves in one batch. Use when user says
   "記下來", "追蹤一下", "寫進去", "add a task", "update task", "mark done",
@@ -16,7 +16,7 @@ triggers:
   - "task status"
   - "new task"
 version: "2.0"
-author: DataXquad
+author: {{COMPANY_NAME}}
 ---
 
 # Managing Tasks
@@ -100,7 +100,7 @@ Every task **must** be linked to an Initiative and Goal. Never leave blank.
 | BusyCow | `recvk50RBz2xk5` |
 | GeoKernel | `recvk50S1aUBia` |
 | AquaOptima | `recvk50SoAHGfD` |
-| DataXquad | `recvk50SSQ0qSD` |
+| {{COMPANY_NAME}} | `recvk50SSQ0qSD` |
 
 ---
 
@@ -119,7 +119,7 @@ Every task **must** be linked to an Initiative and Goal. Never leave blank.
 | Title | fld2Z0Yi15 | Text (primary) | Format: `[TAG] action description` (field name is "Title" NOT "Task Name") |
 | Done | fldEBSzJLw | Checkbox | `true` = completed, `false` = pending |
 | Deadline | fldDIaKjCR | DateTime | ms timestamp UTC+8 |
-| Business Line | fldDvd3nth | SingleSelect | DataXquad / GeoKernel / AquaOptima / TRACI / Distify / BusyCow |
+| Business Line | fldDvd3nth | SingleSelect | {{COMPANY_NAME}} / GeoKernel / AquaOptima / TRACI / Distify / BusyCow |
 | Responsible Person | fldbU06WCv | User | `[{"id": "open_id"}]` + user_id_type: open_id |
 | Priority | fld0kpXg4L | SingleSelect | 🔴 High / 🟡 Medium / 🟢 Low |
 | Description | fldp3pHhSW | Text | |

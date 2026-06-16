@@ -83,5 +83,5 @@ mutation {
 ```
 
 ## CRM Link (external)
-Always use: `https://sales.dataxquad.com/objects/outreachMessages/[UUID]`
+Always use: `{{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]`
 Never use: `http://localhost:3001/objects/outreachMessages/[UUID]`

@@ -42,11 +42,11 @@ A reply is a signal — it means the Lead is engaging. Human decides how to repl
 
 | Item | Value |
 |---|---|
-| OpenMail token | `om_1d18fce1e3639606ca777380193aae114689c8215480eb17` |
-| Leo inbox ID | `0527f34e-65ad-4a02-adbc-e7872a9a921e` |
-| Leo address | `leo-dx@openmail.sh` |
+| OpenMail token | `{{OPENMAIL_TOKEN}}` |
+| Leo inbox ID | `{{OPENMAIL_INBOX_ID}}` |
+| Leo address | `{{AGENT_EMAIL}}` |
 | CRM base URL (API) | `http://localhost:3001/graphql` |
-| CRM base URL (human links) | `https://sales.dataxquad.com` |
+| CRM base URL (human links) | `{{CRM_EXTERNAL_URL}}` |
 
 ---
 
@@ -57,8 +57,8 @@ A reply is a signal — it means the Lead is engaging. Human decides how to repl
 ```python
 import requests
 
-token = "om_1d18fce1e3639606ca777380193aae114689c8215480eb17"
-inbox_id = "0527f34e-65ad-4a02-adbc-e7872a9a921e"
+token = "{{OPENMAIL_TOKEN}}"
+inbox_id = "{{OPENMAIL_INBOX_ID}}"
 headers = {"Authorization": f"Bearer {token}"}
 
 resp = requests.get(
@@ -195,7 +195,7 @@ payload = {
     }]
 }
 requests.post(
-    "http://localhost:8888/v1/default/banks/dx-pipeline/memories",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories",
     json=payload
 )
 ```
@@ -221,7 +221,7 @@ Create a CRM Task for all intents **except negative**:
 mutation {
   createTask(data: {
     title: "[Task title based on intent]"
-    body: { markdown: "**Reply received from:** [Person], [Company]\n\n**Their message:**\n[reply_clean]\n\n**Suggested action:** [what Leo recommends based on intent]\n\nCRM: https://sales.dataxquad.com/objects/people/[PERSON_UUID]" }
+    body: { markdown: "**Reply received from:** [Person], [Company]\n\n**Their message:**\n[reply_clean]\n\n**Suggested action:** [what Leo recommends based on intent]\n\nCRM: {{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]" }
     status: TODO
     dueAt: "[tomorrow ISO date, 09:00 local = 01:00 UTC]"
     assigneeId: "[Sales Rep user ID from CRM]"
@@ -243,7 +243,7 @@ Pick the human Sales Rep (not Leo/bot accounts).
 
 ### Step 8 — Notify sales review channel
 
-Post to `[Sales] Nurturing Outreach Review` (`oc_28f34b34f4da3a13ddc618b19d1c458f`):
+Post to `[Sales] Nurturing Outreach Review` (`{{OUTREACH_REVIEW_CHANNEL_ID}}`):
 Single reply:
 ```
 📩 收到回信！— [Date]
@@ -254,8 +254,8 @@ Single reply:
 > [reply_clean — first 300 chars, truncate with "…" if longer]
 
 📋 已建立 Task：[task title]
-CRM 聯絡人：https://sales.dataxquad.com/objects/people/[PERSON_UUID]
-CRM 互動記錄：https://sales.dataxquad.com/objects/engagements/[ENGAGEMENT_UUID]
+CRM 聯絡人：{{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]
+CRM 互動記錄：{{CRM_EXTERNAL_URL}}/objects/engagements/[ENGAGEMENT_UUID]
 ```
 
 Negative intent (no task created):
@@ -277,12 +277,12 @@ Multiple replies in one run:
 1. **[Person]** — [Company]
    > [reply preview 80 chars…]
    📋 Task：[task title]
-   CRM：https://sales.dataxquad.com/objects/people/[UUID]
+   CRM：{{CRM_EXTERNAL_URL}}/objects/people/[UUID]
 
 2. **[Person]** — [Company]
    > [reply preview 80 chars…]
    📋 Task：[task title]
-   CRM：https://sales.dataxquad.com/objects/people/[UUID]
+   CRM：{{CRM_EXTERNAL_URL}}/objects/people/[UUID]
 ```
 
 ### Step 9 — Mark thread as read
@@ -309,7 +309,7 @@ cron run will retry it.
 
 ## Ops Log (Backend Report)
 
-Post full run report to `[System] Backend Report` (`oc_8c3706de744958173c700d995ccfd4ef`):
+Post full run report to `[System] Backend Report` (`{{SYSTEM_BACKEND_CHANNEL_ID}}`):
 
 ```
 📬 Inbox Monitor — [Date] [Time]
@@ -339,8 +339,8 @@ Stay silent when there's nothing to say.
 
 | Channel | chat_id | What goes here |
 |---|---|---|
-| `[Sales] Nurturing Outreach Review` | `oc_28f34b34f4da3a13ddc618b19d1c458f` | Reply notifications — short, actionable |
-| `[System] Backend Report` | `oc_8c3706de744958173c700d995ccfd4ef` | Full ops log |
+| `[Sales] Nurturing Outreach Review` | `{{OUTREACH_REVIEW_CHANNEL_ID}}` | Reply notifications — short, actionable |
+| `[System] Backend Report` | `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Full ops log |
 
 ---
 
@@ -353,7 +353,7 @@ Stay silent when there's nothing to say.
 - **`is_read` not `isRead`** — OpenMail PATCH body uses snake_case: `{"is_read": true}`. camelCase returns 400. PUT returns 404 — only PATCH works.
 - **Filter direction carefully** — unread threads include ones Leo sent. Always check `latest["direction"] == "inbound"` before processing.
 - **Mark as read only after all steps succeed** — if CRM write or Lark notify fails, leave thread unread so next run retries.
-- **CRM links always external** — `https://sales.dataxquad.com/objects/[type]/[UUID]`. Never use `localhost:3001` in Lark messages.
+- **CRM links always external** — `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`. Never use `localhost:3001` in Lark messages.
 - **Don't auto-create unknown senders** — flag for human review. Spam or cold replies should not pollute CRM.
 - **Strip quoted text from reply** — the meaningful content is the new text only, not the quoted original message. Stop at the first line starting with `>`.
 - **Silent when nothing to do** — if zero unread inbound replies, post nothing to either channel.

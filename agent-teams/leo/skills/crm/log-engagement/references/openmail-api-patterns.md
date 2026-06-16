@@ -2,7 +2,7 @@
 
 Base URL: `https://api.openmail.sh`
 Auth: `Authorization: Bearer <token>`
-Leo's mailbox: `leo-dx@openmail.sh`
+Leo's mailbox: `{{AGENT_EMAIL}}`
 Token: stored in env as `OPENMAIL_TOKEN`
 
 ---
@@ -16,7 +16,7 @@ curl -X POST https://api.openmail.sh/v1/messages \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $(uuidgen)" \
   -d '{
-    "from": "leo-dx@openmail.sh",
+    "from": "{{AGENT_EMAIL}}",
     "to": "prospect@company.com",
     "subject": "Subject line",
     "html": "<p>Body</p>",
@@ -67,7 +67,7 @@ curl "https://api.openmail.sh/v1/inboxes" \
 
 ## Inbound Detection (Prospect → Lead conversion)
 
-A reply from a Prospect to `leo-dx@openmail.sh` signals intent.
+A reply from a Prospect to `{{AGENT_EMAIL}}` signals intent.
 Options for detection:
 1. **Webhook** — real-time, HMAC-SHA256 signed, recommended for production
 2. **Polling** — `GET /v1/inboxes/{id}/threads?is_read=false` on a schedule

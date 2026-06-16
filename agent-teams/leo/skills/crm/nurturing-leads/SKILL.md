@@ -31,12 +31,12 @@ Use when running the monthly nurturing cycle — either via the daily cron scann
 
 ## Purpose
 
-Keep DataXquad top-of-mind with Leads who aren't yet in an active opportunity.
+Keep {{COMPANY_NAME}} top-of-mind with Leads who aren't yet in an active opportunity.
 The goal is **trust and cadence** — they should think of us when an opportunity arises.
 
 **Cadence:** At least once per month per active Lead (NURTURE or OPPORTUNITY tier).
 **Method:** Personalised, contextual messages — never generic blasts.
-**Channel:** Email via OpenMail (`leo-dx@openmail.sh`), with human review before sending.
+**Channel:** Email via OpenMail (`{{AGENT_EMAIL}}`), with human review before sending.
 
 > ⚠️ Never reference specific team members by name (Hunter, Kevin, etc.) in skill logic,
 > cron prompts, or message drafts. Use "the team", "our BD team", or "our team" instead.
@@ -49,14 +49,14 @@ Every outbound email from Leo must use this signature:
 
 ```
 Leo
-Business Development Lead | DataXquad
+Business Development Lead | {{COMPANY_NAME}}
 AI-Powered Digital Employee
 
-📧 leo-dx@openmail.sh
-🌐 https://dataxquad.com
+📧 {{AGENT_EMAIL}}
+🌐 https://{{company_domain}}.com
 
 --
-Hi, I'm Leo — an AI-powered Business Development agent at DataXquad.
+Hi, I'm Leo — an AI-powered Business Development agent at {{COMPANY_NAME}}.
 Feel free to reply directly to this email; I read every response.
 If you'd prefer to speak with a human member of our team at any point,
 just say so and we'll have someone get back to you right away.
@@ -163,7 +163,7 @@ Skip anyone already in the pending queue.
 
 ```python
 # Hindsight
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories/recall
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 {"query": "[Company] [Person] — background, last interaction, topics", "top_k": 5}
 
 # GBrain
@@ -174,7 +174,7 @@ mcp_gbrain_get_page(slug="companies/[company-slug]", fuzzy=True)
 
 #### DX Blog (always check)
 ```python
-web_extract(urls=["http://blog.dataxquad.com"])
+web_extract(urls=["http://blog.{{company_domain}}.com"])
 ```
 Look for posts in last 60 days relevant to this lead's industry. If found: reference naturally.
 
@@ -212,14 +212,14 @@ Hi [First name],
 
 Best,
 Leo
-Business Development Lead | DataXquad
+Business Development Lead | {{COMPANY_NAME}}
 AI-Powered Digital Employee
 
-📧 leo-dx@openmail.sh
-🌐 https://dataxquad.com
+📧 {{AGENT_EMAIL}}
+🌐 https://{{company_domain}}.com
 
 --
-Leo is an AI-powered member of the DataXquad BD team.
+Leo is an AI-powered member of the {{COMPANY_NAME}} BD team.
 All outreach is reviewed by our human team before sending.
 ```
 
@@ -248,7 +248,7 @@ mutation {
 
 #### 6a — Sales review notification (keep it short)
 
-Post to `[Sales] Nurturing Outreach Review` (`oc_28f34b34f4da3a13ddc618b19d1c458f`).
+Post to `[Sales] Nurturing Outreach Review` (`{{OUTREACH_REVIEW_CHANNEL_ID}}`).
 **Show only the draft + a simple action prompt. No run stats, no flags, no debug info.**
 
 Single draft:
@@ -257,7 +257,7 @@ Single draft:
 
 **[Person Name]** — [Company]
 主旨：[subject line]
-CRM：https://sales.dataxquad.com/objects/outreachMessages/[UUID]
+CRM：{{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
 
 回覆 **OK** 發送，或直接在 CRM 將 status 改為 SCHEDULED。
 ```
@@ -266,8 +266,8 @@ Multiple drafts:
 ```
 ✉️ [N] 封草稿待審查 — [Date]
 
-1. **[Person Name]** — [Company] | https://sales.dataxquad.com/objects/outreachMessages/[UUID]
-2. **[Person Name]** — [Company] | https://sales.dataxquad.com/objects/outreachMessages/[UUID]
+1. **[Person Name]** — [Company] | {{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
+2. **[Person Name]** — [Company] | {{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
 
 回覆 OK 全部發送，或指定哪幾封（e.g. "1 and 3 OK"）。
 也可直接在 CRM 將 status 改為 SCHEDULED。
@@ -277,11 +277,11 @@ Multiple drafts:
 - No run stats in this channel
 - No flags/warnings in this channel
 - No full draft body — just subject + CRM link
-- CRM links always use `https://sales.dataxquad.com` (NOT localhost:3001)
+- CRM links always use `{{CRM_EXTERNAL_URL}}` (NOT localhost:3001)
 
 #### 6b — Ops log (full detail)
 
-Post the full run report to `[System] Backend Report` (`oc_8c3706de744958173c700d995ccfd4ef`).
+Post the full run report to `[System] Backend Report` (`{{SYSTEM_BACKEND_CHANNEL_ID}}`).
 Include everything: run stats, drafts created, flags, warnings, memory updates, errors.
 
 ```
@@ -351,19 +351,19 @@ Filter: `scheduledAt` <= now.
 import uuid, requests
 
 headers = {
-    "Authorization": "Bearer om_1d18fce1e3639606ca777380193aae114689c8215480eb17",
+    "Authorization": "Bearer {{OPENMAIL_TOKEN}}",
     "Content-Type": "application/json",
     "Idempotency-Key": str(uuid.uuid4())  # REQUIRED
 }
 
 payload = {
-    "from": "leo-dx@openmail.sh",
+    "from": "{{AGENT_EMAIL}}",
     "to": ["recipient@company.com"],
     "subject": "[subject]",
     "text": "[plain text body]",
 }
 
-INBOX_ID = "0527f34e-65ad-4a02-adbc-e7872a9a921e"  # leo-dx@openmail.sh
+INBOX_ID = "{{OPENMAIL_INBOX_ID}}"  # {{AGENT_EMAIL}}
 resp = requests.post(f"https://api.openmail.sh/v1/inboxes/{INBOX_ID}/send", headers=headers, json=payload)
 # Note: `to` must be a string (not array). `body` is the field name (not `text`).
 # Correct payload: {"to": "email@addr", "subject": "...", "body": "..."}
@@ -407,7 +407,7 @@ mutation {
 
 Then write to Hindsight:
 ```
-POST http://localhost:8888/v1/default/banks/dx-pipeline/memories
+POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 {
   "items": [{
     "content": "[Company] / [Person] — Nurturing email sent [date]. Subject: [subject]. Content: [what was shared]. Next touch: ~30 days.",
@@ -420,11 +420,11 @@ POST http://localhost:8888/v1/default/banks/dx-pipeline/memories
 
 ## Blog Access
 
-DataXquad blog: `http://blog.dataxquad.com` (Ghost CMS)
+{{COMPANY_NAME}} blog: `http://blog.{{company_domain}}.com` (Ghost CMS)
 
 ```python
 # Fetch recent posts
-web_extract(urls=["http://blog.dataxquad.com"])
+web_extract(urls=["http://blog.{{company_domain}}.com"])
 # Look for: title, excerpt, URL, publish date
 # Select posts < 60 days old that match lead's industry
 ```
@@ -435,8 +435,8 @@ web_extract(urls=["http://blog.dataxquad.com"])
 
 | Channel | chat_id | What goes here |
 |---|---|---|
-| `[Sales] Nurturing Outreach Review` | `oc_28f34b34f4da3a13ddc618b19d1c458f` | Draft notifications only — short format, subject + CRM link |
-| `[System] Backend Report` | `oc_8c3706de744958173c700d995ccfd4ef` | Full ops log from cron runs — stats, flags, errors |
+| `[Sales] Nurturing Outreach Review` | `{{OUTREACH_REVIEW_CHANNEL_ID}}` | Draft notifications only — short format, subject + CRM link |
+| `[System] Backend Report` | `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Full ops log from cron runs — stats, flags, errors |
 
 **The review channel must stay short.** Sales team reads it to approve drafts, not to audit system health. One glance, one action. No run stats, no flags, no debug output in that channel.
 
@@ -446,7 +446,7 @@ Cron `deliver` is always set to `[System] Backend Report`. The review notificati
 
 ## Lark Review Channel
 
-**Chat ID:** `oc_28f34b34f4da3a13ddc618b19d1c458f`
+**Chat ID:** `{{OUTREACH_REVIEW_CHANNEL_ID}}`
 **Name:** `[Sales] Nurturing Outreach Review`
 **Purpose:** Human review of all outreach drafts before sending.
 
@@ -462,13 +462,13 @@ Human responds:
 - **Never hardcode team member names** in skill logic, cron prompts, or message drafts. Use "Human", "Sales Rep", "our team", "the BD team". This applies across all skills.
 - **Email disclaimer is mandatory — never omit it.** Every outbound email must end with the full AI-agent disclaimer block (see "Leo's Email Identity" section). This reassures recipients they can reply freely and escalate to a human. Do not shorten or paraphrase it. WhatsApp/LINE messages do NOT need this disclaimer — email only.
 - **`approvals.cron_mode` must be set to `approve`** — without this, all terminal/execute_code calls in cron sessions are BLOCKED (no user present to approve). Run: `hermes --profile leo config set approvals.cron_mode approve`. See `references/cron-approval-config.md`.
-- **CRM API calls use localhost** — `http://localhost:3001/graphql` for all CRM reads/writes (fast, no external traffic). But **CRM links shown to humans always use the external URL**: `https://sales.dataxquad.com/objects/[type]/[UUID]`. Never expose localhost URLs in Lark messages.
+- **CRM API calls use localhost** — `http://localhost:3001/graphql` for all CRM reads/writes (fast, no external traffic). But **CRM links shown to humans always use the external URL**: `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`. Never expose localhost URLs in Lark messages.
 - **Two delivery channels, two audiences** — `[Sales] Nurturing Outreach Review` gets only the draft notification (short, actionable). `[System] Backend Report` gets the full ops log (stats, flags, errors). Never mix them.
 
 - **Never auto-send without SCHEDULED status** — DRAFT means not approved. Only SCHEDULED messages get sent by Cron B.
 - **Cron session ≠ interactive session** — tools like `execute_code` and `terminal` may behave differently or get blocked in an interactive session vs. a cron session. When testing the nurturing flow interactively, use `terminal` directly for Hindsight calls rather than `execute_code`. The cron runs cleanly in its own isolated session with `["web", "terminal", "file"]` toolset.
-- **OpenMail send endpoint is `POST /v1/inboxes/{inbox_id}/send`** — NOT `/v1/messages`. Inbox ID for leo-dx@openmail.sh: `0527f34e-65ad-4a02-adbc-e7872a9a921e`. Payload: `to` is a string (not array), body field is `body` (not `text`). Confirmed 2026-06-15.
-- **Never reference team members by name** in drafts or skill logic. Use "our team", "DataXquad's BD team".
+- **OpenMail send endpoint is `POST /v1/inboxes/{inbox_id}/send`** — NOT `/v1/messages`. Inbox ID for {{AGENT_EMAIL}}: `{{OPENMAIL_INBOX_ID}}`. Payload: `to` is a string (not array), body field is `body` (not `text`). Confirmed 2026-06-15.
+- **Never reference team members by name** in drafts or skill logic. Use "our team", "{{COMPANY_NAME}}'s BD team".
 - **Skip PASSERBY tier entirely** — never draft nurturing for PASSERBY leads.
 - **Skip leads already in pending queue** — check for existing DRAFT/SCHEDULED messages before drafting a new one.
 - **lastContactDate drives the 30-day check** — always update it after a SENT message.

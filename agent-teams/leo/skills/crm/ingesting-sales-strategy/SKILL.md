@@ -3,7 +3,7 @@ name: ingesting-sales-strategy
 description: >
   One-time setup skill (re-run on document updates). Reads the company's
   sales-strategy.md from GitHub Wiki, extracts structured knowledge, and
-  stores it into GBrain (concept pages) and Hindsight dx-global (semantic
+  stores it into GBrain (concept pages) and Hindsight {{ORG_PREFIX}}-global (semantic
   memories). Leo reads from GBrain + Hindsight during Health Check and
   Strategy Check — never reads the source document at runtime.
 triggers:
@@ -240,7 +240,7 @@ updated: [today's date]
 
 ---
 
-## Step 4 — Write to Hindsight dx-global
+## Step 4 — Write to Hindsight {{ORG_PREFIX}}-global
 
 Write one semantic memory item per section. Use natural language — these
 are what Leo recalls with fuzzy queries during Health Check.
@@ -276,7 +276,7 @@ items = [
 ]
 
 requests.post(
-    "http://localhost:8888/v1/default/banks/dx-global/memories",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-global/memories",
     json={"items": items}
 )
 ```
@@ -297,7 +297,7 @@ Report back:
 - concepts/partnership-strategy
 - concepts/pipeline-benchmarks
 
-**Hindsight dx-global:** 6 memory items stored
+**Hindsight {{ORG_PREFIX}}-global:** 6 memory items stored
 
 **Key values extracted:**
 - Revenue target: [value] ([period])
@@ -321,5 +321,5 @@ Ask the document owner to fill them in and re-run ingest.
 
 - **Re-run = overwrite** — `mcp_gbrain_put_page` overwrites existing pages. This is correct behaviour on re-ingest.
 - **If benchmarks are blank** — store stall threshold as 30 days (default) and note that conversion rates will be calculated from CRM data after 6+ months.
-- **dx-global is for company-wide decisions only** — do not store opportunity-specific or person-specific data here.
+- **{{ORG_PREFIX}}-global is for company-wide decisions only** — do not store opportunity-specific or person-specific data here.
 - **Never use "deal"** — always use "opportunity" in all stored content, matching the CRM object name.

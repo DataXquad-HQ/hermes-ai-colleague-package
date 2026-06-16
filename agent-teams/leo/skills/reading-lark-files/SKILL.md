@@ -128,7 +128,7 @@ sys.path.insert(0, f"{skill_dir}/scripts")
 from gws_bridge import get_valid_token
 
 token = get_valid_token()
-DRIVE_ID = "0AMV9-bYAvS7GUk9PVA"   # DataXquad Shared Drive
+DRIVE_ID = "0AMV9-bYAvS7GUk9PVA"   # {{COMPANY_NAME}} Shared Drive
 
 with open("/tmp/AquaOptima.xlsx", "rb") as f:
     file_data = f.read()

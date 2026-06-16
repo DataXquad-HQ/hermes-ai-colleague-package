@@ -15,7 +15,7 @@ triggers:
   - "nurturing email"
   - "inbox monitor"
 version: "1.0"
-author: DataXquad/Leo
+author: {{COMPANY_NAME}}/Leo
 ---
 
 # OpenMail — Full Access Skill (Leo)
@@ -25,8 +25,8 @@ author: DataXquad/Leo
 | Item | Value |
 |---|---|
 | API base URL | `https://api.openmail.sh/v1` |
-| Leo's inbox ID | `0527f34e-65ad-4a02-adbc-e7872a9a921e` |
-| Leo's address | `leo-dx@openmail.sh` |
+| Leo's inbox ID | `{{OPENMAIL_INBOX_ID}}` |
+| Leo's address | `{{AGENT_EMAIL}}` |
 | Token env key | `OPENMAIL_API_KEY` |
 
 **Load token at runtime — never hardcode:**
@@ -44,7 +44,7 @@ def load_om_token():
 
 OM_TOKEN = load_om_token()
 OM_HEADERS = {"Authorization": f"Bearer {OM_TOKEN}", "Content-Type": "application/json"}
-INBOX_ID = "0527f34e-65ad-4a02-adbc-e7872a9a921e"
+INBOX_ID = "{{OPENMAIL_INBOX_ID}}"
 BASE = "https://api.openmail.sh/v1"
 ```
 
@@ -60,7 +60,7 @@ resp = requests.post(
     f"{BASE}/messages",
     headers={**OM_HEADERS, "Idempotency-Key": idempotency_key},
     json={
-        "from": "leo-dx@openmail.sh",
+        "from": "{{AGENT_EMAIL}}",
         "to": "prospect@company.com",
         "subject": "Subject line",
         "html": "<p>Email body in HTML</p>",
@@ -77,7 +77,7 @@ resp = requests.post(
     f"{BASE}/messages",
     headers={**OM_HEADERS, "Idempotency-Key": str(uuid.uuid4())},
     json={
-        "from": "leo-dx@openmail.sh",
+        "from": "{{AGENT_EMAIL}}",
         "to": "prospect@company.com",
         "subject": "Re: Subject line",
         "html": "<p>Reply body</p>",
@@ -172,7 +172,7 @@ After every successful send, always:
 1. Update `OutreachMessage.status` → `SENT`, set `sentAt`
 2. Update `Person.lastContactDate` → ISO now
 3. Create `Engagement` record (type=EMAIL, status=COMPLETED) linked to Person + Company
-4. Write Hindsight memory to `dx-pipeline`
+4. Write Hindsight memory to `{{ORG_PREFIX}}-pipeline`
 
 ---
 

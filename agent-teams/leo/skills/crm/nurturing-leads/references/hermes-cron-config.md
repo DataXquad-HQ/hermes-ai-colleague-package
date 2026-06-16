@@ -29,18 +29,18 @@ This is already set in Leo's config as of 2026-06-15. If it ever resets (e.g. af
 
 Two different URLs for two different audiences:
 - **API calls:** `http://localhost:3001/graphql` — fast, no external traffic, used in all Python scripts
-- **Human-facing links in Lark:** `https://sales.dataxquad.com/objects/[type]/[UUID]` — never localhost
+- **Human-facing links in Lark:** `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]` — never localhost
 
 Pattern to apply when building CRM record links:
 ```python
-CRM_BASE_EXTERNAL = "https://sales.dataxquad.com"
+CRM_BASE_EXTERNAL = "{{CRM_EXTERNAL_URL}}"
 
 def crm_link(object_type: str, uuid: str) -> str:
     return f"{CRM_BASE_EXTERNAL}/objects/{object_type}/{uuid}"
 
 # e.g.
 crm_link("outreachMessages", "fc2f8a96-0a74-42e3-a048-678dca9345b4")
-# → https://sales.dataxquad.com/objects/outreachMessages/fc2f8a96-0a74-42e3-a048-678dca9345b4
+# → {{CRM_EXTERNAL_URL}}/objects/outreachMessages/fc2f8a96-0a74-42e3-a048-678dca9345b4
 ```
 
 ## No-hardcode-names rule

@@ -74,7 +74,7 @@ Flag any page that:
 
 ---
 
-## Step 2 — Check Hindsight dx-global
+## Step 2 — Check Hindsight {{ORG_PREFIX}}-global
 
 Verify strategy memories are present:
 
@@ -91,7 +91,7 @@ checks = [
 
 for query in checks:
     result = requests.post(
-        "http://localhost:8888/v1/default/banks/dx-global/memories/recall",
+        "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-global/memories/recall",
         json={"query": query, "top_k": 1}
     ).json()
     # Flag if no results returned
@@ -105,7 +105,7 @@ If any query returns empty → flag as missing.
 
 ```python
 result = requests.post(
-    "http://localhost:8888/v1/default/banks/dx-pipeline/memories/recall",
+    "http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall",
     json={"query": "weekly health check pipeline snapshot status coverage", "top_k": 8}
 ).json()
 
@@ -166,7 +166,7 @@ GBrain strategy pages:
   ⚠️ concepts/pipeline-benchmarks (last updated [date] — 90+ days ago)
   ❌ concepts/partnership-strategy (missing)
 
-Hindsight dx-global:
+Hindsight {{ORG_PREFIX}}-global:
   ✅ Revenue target recalled
   ✅ ICP recalled
   ⚠️ Benchmarks not found
@@ -245,7 +245,7 @@ mutation {
 | Channel | What goes here |
 |---|---|
 | `[Sales] Pipeline Review` (ask human for ID) | Full Strategy Check report |
-| `[System] Backend Report` `oc_8c3706de744958173c700d995ccfd4ef` | Ops log — memory check results, tasks created |
+| `[System] Backend Report` `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Ops log — memory check results, tasks created |
 
 ---
 

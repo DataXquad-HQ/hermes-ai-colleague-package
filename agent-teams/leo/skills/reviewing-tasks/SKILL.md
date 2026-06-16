@@ -1,7 +1,7 @@
 ---
 name: reviewing-tasks
 description: >
-  Query and summarise tasks from the DataXquad Task Tracker with Goal-first
+  Query and summarise tasks from the {{COMPANY_NAME}} Task Tracker with Goal-first
   prioritisation. Use when user asks "what tasks do I have", "what's due today",
   "standup", "任務清單", "本週重點", or wants a workload overview grouped by Goal.
 triggers:
@@ -15,7 +15,7 @@ triggers:
   - "本週重點"
   - "有什麼事要做"
 version: "2.0"
-author: DataXquad
+author: {{COMPANY_NAME}}
 ---
 
 # Reviewing Tasks

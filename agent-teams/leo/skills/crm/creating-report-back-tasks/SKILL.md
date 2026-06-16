@@ -17,7 +17,7 @@ triggers:
   - "明天有通電話"
   - "安排了一個 demo"
 version: "1.0"
-author: DataXquad/Leo
+author: {{COMPANY_NAME}}/Leo
 ---
 
 # Create Report-Back Task

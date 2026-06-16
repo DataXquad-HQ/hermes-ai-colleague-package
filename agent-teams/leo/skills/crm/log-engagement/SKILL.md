@@ -21,7 +21,7 @@ triggers:
   - "sent an email to"
   - "發了信給"
 version: "2.0"
-author: DataXquad/Leo
+author: {{COMPANY_NAME}}/Leo
 ---
 
 # Log Engagement
@@ -70,13 +70,13 @@ Same flow. Different silence thresholds.
 Before extracting or writing anything, recall what Leo already knows about this opportunity:
 
 ```
-POST /v1/default/banks/dx-pipeline/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 {"query": "[Company name] opportunity — background, blockers, last interaction", "top_k": 5}
 ```
 
 Also recall Hunter's current priorities if this is a sensitive or high-stakes opportunity:
 ```
-POST /v1/default/banks/dx-human-hunter/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-human-sales-rep/memories/recall
 {"query": "priorities and communication style", "top_k": 3}
 ```
 
@@ -220,9 +220,9 @@ mutation {
 
 ### Step 6 — Update Memory (two layers, both required)
 
-**Layer 1 — Hindsight `dx-pipeline` (primary — always do this first):**
+**Layer 1 — Hindsight `{{ORG_PREFIX}}-pipeline` (primary — always do this first):**
 ```
-POST /v1/default/banks/dx-pipeline/memories
+POST /v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 {"items": [{
   "content": "[Company] — [date]: [what happened]. Blocker: [if any]. Hunter's read: [if shared]. Next: [agreed action].",
   "tags": ["opportunity", "[company-slug]", "[opportunity|partnership]"]
@@ -275,11 +275,11 @@ Both layers are non-negotiable. Hindsight = fast recall next session. GBrain = p
 
 ## Pitfalls
 
-- **Recall first.** Always recall `dx-pipeline` before extracting. Don't ask the Sales Rep what Hindsight already knows.
+- **Recall first.** Always recall `{{ORG_PREFIX}}-pipeline` before extracting. Don't ask the Sales Rep what Hindsight already knows.
 - **Confirm before writing.** Extract → confirm → write. Never go straight to CRM.
 - **Engagements are immutable.** Never update or delete. Add a new one if a correction is needed.
 - **"Waiting for client" is still a Task.** Every open loop needs a Task with a due date.
-- **Both memory layers required.** Hindsight `dx-pipeline` first, then GBrain. Neither alone is sufficient.
+- **Both memory layers required.** Hindsight `{{ORG_PREFIX}}-pipeline` first, then GBrain. Neither alone is sufficient.
 - **`clientAttendeesId` is the Person link** — NOT `personId`, NOT `attendeeId`. This is the field that links an Engagement to a Person. Always set it.
 - **`engagementNote` is RichText** — use `engagementNote: { markdown: "..." }` NOT a plain string. Same pattern as `bodyV2` on Task/Note.
 - **`opportunityId` and `partnershipId` are both optional** — confirmed via schema. Person-only engagements are fully supported without either.
@@ -287,7 +287,7 @@ Both layers are non-negotiable. Hindsight = fast recall next session. GBrain = p
 - **`bodyV2` not `body`.** Always use `bodyV2: { markdown: "..." }` for Notes and Tasks.
 - **Single-record lookup.** Use `opportunities(filter: { id: { eq: "UUID" } })` not `opportunity(id: "UUID")`.
 - **Attendees not in CRM yet.** If meeting attendees (e.g. Rae, Julia) don't exist as People records, set `clientAttendeesId` to the primary known contact for the opportunity, and list the actual attendees by name in `engagementNote`. Do NOT block the engagement write waiting for new People records to be created. Flag in your reply that those contacts should be added to CRM.
-- **`mcp_gbrain_extract_facts` embedding dimension error.** If extract_facts returns `"expected 1536 dimensions, not 768"`, the GBrain source was indexed with a different embedding model. Graceful fallback: the intel is already in Hindsight `dx-pipeline` — log the facts there and note the GBrain failure in your reply. Do not retry extract_facts in a loop.
+- **`mcp_gbrain_extract_facts` embedding dimension error.** If extract_facts returns `"expected 1536 dimensions, not 768"`, the GBrain source was indexed with a different embedding model. Graceful fallback: the intel is already in Hindsight `{{ORG_PREFIX}}-pipeline` — log the facts there and note the GBrain failure in your reply. Do not retry extract_facts in a loop.
 
 ---
 

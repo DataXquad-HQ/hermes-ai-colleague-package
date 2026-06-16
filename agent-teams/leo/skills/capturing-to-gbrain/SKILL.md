@@ -14,7 +14,7 @@ triggers:
   - user explicitly says to remember something permanently
   - agent judges information meets the threshold below
 version: "1.0"
-author: DataXquad/BusyCow
+author: {{COMPANY_NAME}}/BusyCow
 ---
 
 # Capturing to GBrain
@@ -65,7 +65,7 @@ Store when the information is **durable and reusable across future sessions**:
 | Competitor intel | `concept` | `competitors/salesforce` |
 | Partnership strategy | `concept` | `partnerships/aquaoptima-partner-strategy` |
 | System / process doc | `concept` | `systems/hermes-memory-architecture` |
-| Venture studio / fund | `company` | `companies/dataxquad-venture-studio` |
+| Venture studio / fund | `company` | `companies/{{company_domain}}-venture-studio` |
 | Fund portfolio map | `company` | Nest inside the studio page; use a Portfolio section with a markdown table (Company / Stage / Key Target). Do NOT create separate pages for grooming-stage companies — wait until they have a CEO or active raise. |
 
 ---
