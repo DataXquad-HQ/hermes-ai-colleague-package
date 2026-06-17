@@ -65,39 +65,16 @@
 
 ---
 
-### 2b. Capabilities Overview
+### 2b. Capabilities
 
-> A Capability is a named job function — it's how humans understand what the agent does. One capability = one area of responsibility. Not a skill, not a task.
->
-> Rule: if you can't name it as a job function (e.g. "Lead Nurturing", "Pipeline Monitoring"), it's probably too granular.
+> A Capability is a named job function — how humans understand what the agent does. One capability = one area of responsibility.
+> Each Capability maps to one or more Skills. Trigger/output detail belongs in the Skill's SKILL.md, not here.
 
-| # | Capability | What it means in plain English | Priority |
-|---|---|---|---|
-| C1 | | | 🔴 Must-have |
-| C2 | | | 🔴 Must-have |
-| C3 | | | 🟡 Nice-to-have |
-
----
-
-### 2c. Capability Detail
-
-> For each capability above, define what it actually does, what triggers it, and what success looks like.
-
-**C1 — [Capability Name]**
-
-- **Trigger:** *When does this capability activate? (e.g. new lead enters CRM, human asks, daily cron)*
-- **What the agent does:** *Step-by-step description of the action*
-- **Output:** *What does the human receive? What gets written to memory/CRM?*
-- **Success criterion:** *How do we know this worked?*
-
-**C2 — [Capability Name]**
-
-- **Trigger:**
-- **What the agent does:**
-- **Output:**
-- **Success criterion:**
-
-*(Copy block for each capability)*
+| # | Capability | What it means in plain English | Skills | Priority |
+|---|---|---|---|---|
+| C1 | | | | 🔴 Must-have |
+| C2 | | | | 🔴 Must-have |
+| C3 | | | | 🟡 Nice-to-have |
 
 ---
 

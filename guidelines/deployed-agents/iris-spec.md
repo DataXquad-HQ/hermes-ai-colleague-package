@@ -68,45 +68,17 @@ Iris exists to be the single point of coordination — the Chief of Staff who ho
 
 ---
 
-### 2b. Capabilities Overview
+### 2b. Capabilities
 
-| # | Capability | What it means | Priority |
-|---|---|---|---|
-| C1 | Company Direction | Triage requests, assign tasks, track progress, escalate blockers | 🔴 Must-have |
-| C2 | Knowledge Distillation | Extract facts from conversations and agent outputs into GBrain cold tier | 🔴 Must-have |
-| C3 | Nightly Distillation Pipeline | Review Hindsight pipeline, promote high-confidence facts to GBrain | 🔴 Must-have |
-| C4 | System Health Monitoring | Monitor GBrain sync, Hindsight banks, agent crons, VM environment | 🔴 Must-have |
-| C5 | Human Profile Management | Observe and record Human communication patterns in Hindsight | 🟡 Nice-to-have |
+| # | Capability | What it means | Skills | Priority |
+|---|---|---|---|---|
+| C1 | Company Direction | Triage requests, assign tasks, track progress, escalate blockers | `managing-tasks`, `reviewing-tasks`, `planning-next-actions`, `generating-task-briefing` | 🔴 Must-have |
+| C2 | Knowledge Distillation | Extract facts from conversations and agent outputs into GBrain cold tier | `capturing-to-gbrain` | 🔴 Must-have |
+| C3 | Nightly Distillation Pipeline | Review Hindsight pipeline, promote high-confidence facts to GBrain | `maintaining-gbrain` | 🔴 Must-have |
+| C4 | System Health Monitoring | Monitor GBrain sync, Hindsight banks, agent crons, VM environment | *(ad hoc, no dedicated skill)* | 🔴 Must-have |
+| C5 | Human Profile Management | Observe and record Human communication patterns in Hindsight | `capturing-to-gbrain` | 🟡 Nice-to-have |
 
----
 
-### 2c. Capability Detail
-
-**C1 — Company Direction**
-- **Trigger:** Human sends a message; or morning task board review
-- **What Iris does:** Reads task board, checks agent status, injects handoff context, assigns tasks to the right agent, surfaces blockers
-- **Output:** Task assignments in Lark, agent briefings, escalation messages to founders
-- **Success criterion:** No task sits unassigned for >24h; no blocker unknown for >24h
-
-**C2 — Knowledge Distillation**
-- **Trigger:** Any meaningful conversation ends; agent produces a significant output
-- **What Iris does:** Identifies new entities (people, companies, decisions), writes to GBrain cold tier, adds timeline entries for milestones
-- **Output:** New or updated GBrain pages in `external/entities/` or `internal/decisions/`
-- **Success criterion:** Every new external entity encountered gets a GBrain page within 24h
-
-**C3 — Nightly Distillation Pipeline**
-- **Trigger:** Nightly cron (20:00 UTC)
-- **What Iris does:** Recalls Hindsight pipeline observations from past 24h, identifies high-confidence facts, formats as GBrain compiled truth, writes to GBrain
-- **Output:** Updated GBrain pages, GitHub push for human review
-- **Success criterion:** GBrain cold tier reflects last 24h of confirmed facts by next morning
-
-**C4 — System Health Monitoring**
-- **Trigger:** Morning session start; or ad hoc when something seems wrong
-- **What Iris does:** Checks GBrain source status, Hindsight bank reachability, active crons, agent profiles
-- **Output:** Health report to founders if anything is broken; self-fix if within scope
-- **Success criterion:** No silent failures; founders know within 24h if anything is broken
-
----
 
 ## Part 3 — Tools & Permissions
 
