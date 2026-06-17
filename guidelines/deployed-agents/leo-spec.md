@@ -66,7 +66,9 @@ Leo exists to be the attention the sales rep buys back. Every prospect gets cont
 
 ---
 
-### 2b. Capabilities
+## Part 3 — Capabilities
+
+### 3a. Capabilities Overview
 
 | # | Capability | What it means | Skills | Status |
 |---|---|---|---|---|
@@ -79,44 +81,37 @@ Leo exists to be the attention the sales rep buys back. Every prospect gets cont
 
 ---
 
-## Part 3 — Tools & Permissions
+### 3b. Skills
 
-### 3a. Tools Required
+**Capability Skills**
 
-| Tool / Skill | Purpose |
+| Skill | Capability | What it does |
+|---|---|---|
+| `capturing-leads` | C1 | Onboard new contacts from events / networking / referrals into CRM as Leads |
+| `prospect-scouting` | C1 | Analyse a raw list and surface who is worth prioritising, with reasoning |
+| `enriching-accounts` | C3 | Enrich company and contact context — Level 1 (new Lead) and Level 2 (monthly update) |
+| `nurturing-leads` | C4 | Draft and send monthly personalised outreach to NURTURE / OPPORTUNITY tier Leads |
+| `monitoring-inbox-replies` | C4 | Poll inbox for inbound replies, log Engagements, create follow-up Tasks, notify sales team |
+| `log-engagement` | C5 | Log a completed meeting / call / email / demo into CRM and Hindsight |
+| `handling-pipeline-interactions` | C5 | Process any human update about an Opportunity or Partnership |
+| `creating-report-back-tasks` | C5 | Create a Report-Back Task whenever a future meeting or demo is mentioned |
+| `advising-on-tasks` | C5 | Provide deep, context-driven advice on how to approach a specific CRM Task |
+| `sending-daily-pipeline-reminder` | C5 | Generate and deliver the daily task reminder to all active Sales Reps |
+| `ingesting-sales-strategy` | C6 | Read strategy docs from GBrain and store key insights into Hindsight |
+| `checking-pipeline-health` | C6 | Weekly pipeline review — coverage ratio, gaps to target, stalled items |
+| `checking-pipeline-strategy` | C6 | Monthly strategy review — memory layer freshness, trend analysis, strategic signals |
+
+**General Skills**
+
+| Skill | Purpose |
 |---|---|
-| `twenty-crm` | All CRM read/write via GraphQL — foundational layer for all pipeline operations |
-| `openmail` | Send/receive email via agent's dedicated mailbox |
-| `web` (Tavily) | Web research for account enrichment and prospect scouting |
 | `capturing-to-gbrain` | Write external entities and facts to GBrain |
 | `lark-im` | Send messages to human and Lark channels |
 | `managing-skills` | Maintain and update own skills |
 
-### 3b. Credentials & Environment
+---
 
-> Every agent owns its own complete set of credentials. No inheritance, no cross-profile access. Shared credentials are duplicated into each agent's `.env` independently.
-
-| Service | Purpose | `.env` key |
-|---|---|---|
-| Anthropic | LLM inference | `ANTHROPIC_API_KEY` |
-| OpenRouter | LLM fallback | `OPENROUTER_API_KEY` |
-| Twenty CRM | Pipeline read/write | `TWENTY_API_KEY` |
-| OpenMail | Email send/receive | Agent mailbox token |
-| Feishu Bot | Lark messaging | `FEISHU_APP_ID`, `FEISHU_APP_SECRET` |
-| Hindsight | Pipeline bank read/write | `HINDSIGHT_BASE_URL` |
-| Tavily | Web search for enrichment | `TAVILY_API_KEY` |
-| GitHub | Read internal repos | `GITHUB_TOKEN` |
-
-### 3c. Delivery Channels
-
-| Channel | Purpose |
-|---|---|
-| `[Sales] Daily Update` | Daily pipeline reminder and task list for sales team |
-| `[Sales] Nurturing Review` | Outreach drafts pending human approval before send |
-| `[Sales] Pipeline and Strategy` | Weekly health check and monthly strategy reports |
-| `[System] Backend Report` | Cron ops logs, errors, run stats — internal only |
-
-### 3d. Cron Jobs
+### 3c. Cron Jobs
 
 | Job | Schedule | Capability | Delivers to |
 |---|---|---|---|
@@ -130,16 +125,62 @@ Leo exists to be the attention the sales rep buys back. Every prospect gets cont
 
 ---
 
-## Part 4 — Build Mapping
+### 3d. Delivery Channels
+
+| Channel | Purpose |
+|---|---|
+| `[Sales] Daily Update` | Daily pipeline reminder and task list for sales team |
+| `[Sales] Nurturing Review` | Outreach drafts pending human approval before send |
+| `[Sales] Pipeline and Strategy` | Weekly health check and monthly strategy reports |
+| `[System] Backend Report` | Cron ops logs, errors, run stats — internal only |
+
+---
+
+## Part 4 — Tools & Permissions
+
+### 4a. Tools Required
+
+| Tool / Skill | Purpose |
+|---|---|
+| `twenty-crm` | All CRM read/write via GraphQL — foundational layer for all pipeline operations |
+| `openmail` | Send/receive email via agent's dedicated mailbox |
+| `web` (Tavily) | Web research for account enrichment and prospect scouting |
+| `capturing-to-gbrain` | Write external entities and facts to GBrain |
+| `lark-im` | Send messages to human and Lark channels |
+| `managing-skills` | Maintain and update own skills |
+
+---
+
+### 4b. Credentials & Environment
+
+> Every agent owns its own complete set of credentials. No inheritance, no cross-profile access. Shared credentials are duplicated into each agent's `.env` independently.
+
+| Service | Purpose | `.env` key |
+|---|---|---|
+| Anthropic | LLM inference | `ANTHROPIC_API_KEY` |
+| OpenRouter | LLM fallback | `OPENROUTER_API_KEY` |
+| Twenty CRM | Pipeline read/write | `TWENTY_API_KEY` |
+| OpenMail | Email send/receive | Agent mailbox token |
+| Feishu Bot | Lark messaging | `FEISHU_APP_ID`, `FEISHU_APP_SECRET` |
+| Hindsight | Pipeline bank read/write | `HINDSIGHT_BASE_URL` |
+| Tavily | Web search for enrichment | `TAVILY_API_KEY` |
+
+---
+
+### 4c. Build Mapping
 
 | Spec Section | Build Artifact | Location |
 |---|---|---|
-| Identity, mandate | `SOUL.md` — Who Leo Is | `~/.hermes/profiles/leo/SOUL.md` |
-| Team positioning | `SOUL.md` — Position in the Team | `~/.hermes/profiles/leo/SOUL.md` |
-| Context sources | `SOUL.md` — Knowledge Sources | `~/.hermes/profiles/leo/SOUL.md` |
-| Capabilities + Skills | Skills directory | `~/.hermes/profiles/leo/skills/` |
-| Cron jobs | Hermes cron config | `busycow-agent-package/agent-teams/leo/cron/jobs.json` |
-| Credentials | Per-profile `.env` | `~/.hermes/profiles/leo/.env` |
+| 1b. Role & Goal | `SOUL.md` — Who Leo Is | `~/.hermes/profiles/leo/SOUL.md` |
+| 1c. Team Positioning | `SOUL.md` — Position in the Team | `~/.hermes/profiles/leo/SOUL.md` |
+| 2a. Context sources | `SOUL.md` — Knowledge Sources | `~/.hermes/profiles/leo/SOUL.md` |
+| 3a. Capabilities | `SOUL.md` — Capabilities list | `~/.hermes/profiles/leo/SOUL.md` |
+| 3b. Skills | Skills directory | `~/.hermes/profiles/leo/skills/` |
+| 3c. Cron jobs | Hermes cron config | `agent-teams/leo/cron/jobs.json` |
+| 4a. Tools | Skills in SOUL.md | `~/.hermes/profiles/leo/skills/` |
+| 4b. Credentials | Per-profile `.env` | `~/.hermes/profiles/leo/.env` |
+
+---
 
 ## Spec Status
 
@@ -147,10 +188,11 @@ Leo exists to be the attention the sales rep buys back. Every prospect gets cont
 |---|---|
 | Part 1 — Core Need & Positioning | ✅ Complete |
 | Part 2 — Context & Data Layer | ✅ Complete |
-| Part 3 — Tools & Permissions | ✅ Complete |
+| Part 3 — Capabilities | ✅ Complete |
+| Part 4 — Tools & Permissions | ✅ Complete |
 | GBrain BL content filled | 📝 Files exist — content needed |
 | Hindsight banks | ✅ `[org]-pipeline`, `[org]-agent-leo` |
 | SOUL.md | ✅ Deployed |
 | C1, C3, C4, C5, C6 skills | ✅ Built |
 | C2 Outbound Prospecting | 🔧 Pending build |
-| All cron jobs | ✅ Configured in `jobs.json` |
+| Cron jobs | ✅ Configured in `jobs.json` |

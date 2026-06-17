@@ -32,9 +32,7 @@
 
 ### 1c. Team Positioning
 
-*Where does this agent sit in the team? What does it hand off to and receive from other agents?*
-
-| | Agent | Handoff |
+| | Role | What flows |
 |---|---|---|
 | **Receives from** | | *What context or work arrives to this agent* |
 | **Hands off to** | | *What this agent produces that others consume* |
@@ -52,8 +50,8 @@
 |---|---|---|
 | *e.g. Our ICP for this BL* | GBrain vault | Direct file: `internal/business-lines/[bl]/icp.md` |
 | *e.g. Company background* | GBrain vault | Direct file: `internal/company/overview.md` |
-| *e.g. Recent deal interactions* | Hindsight | `dx-pipeline` bank recall |
-| *e.g. This human's preferences* | Hindsight | `dx-human-[name]` bank recall |
+| *e.g. Recent deal interactions* | Hindsight | `[org]-pipeline` bank recall |
+| *e.g. This human's preferences* | Hindsight | `[org]-human-[name]` bank recall |
 | *e.g. Who is this external company* | GBrain MCP | `mcp_gbrain_get_page("external/entities/companies/[slug]")` |
 
 **GBrain content that must exist before this agent is useful:**
@@ -65,7 +63,9 @@
 
 ---
 
-### 2b. Capabilities
+## Part 3 — Capabilities
+
+### 3a. Capabilities Overview
 
 > A Capability is a named job function — how humans understand what the agent does. One capability = one area of responsibility.
 > Each Capability maps to one or more Skills. Trigger/output detail belongs in the Skill's SKILL.md, not here.
@@ -78,107 +78,117 @@
 
 ---
 
-## Part 3 — Tools & Permissions
+### 3b. Skills
 
-### 3a. Tools Required
+> List every skill this agent needs. Capability Skills are specific to this agent's job. General Skills are shared tooling any agent might use.
 
-| Tool / Skill | Purpose | Required for Capability |
+**Capability Skills**
+
+| Skill | Capability | What it does |
 |---|---|---|
-| `lark-im` | Send/receive messages | All |
-| `lark-base` | Read/write task board | All |
-| `twenty-crm` | Pipeline read/write | *(if applicable)* |
-| `capturing-to-gbrain` | Write entities/facts to GBrain | All |
-| *(add as needed)* | | |
-
----
-
-### 3b. Credentials & Environment
-
-> **Principle: every agent owns its own complete set of credentials. No inheritance, no sharing, no cross-profile access.** If a credential is used by multiple agents, it is duplicated into each agent's `.env` by whoever is onboarding the team. Keeping agents independent prevents cascading failures and makes each agent fully self-contained.
-
-| Service | Purpose | `.env` key |
-|---|---|---|
-| Anthropic | LLM inference | `ANTHROPIC_API_KEY` |
 | | | |
 
----
+**General Skills**
 
-### 3c. Delivery Channels
-
-> Where does this agent send output? Confirm channel IDs before setting up cron jobs.
-
-| Channel | `chat_id` | What goes here |
-|---|---|---|
-| `[Agent] Daily Update` | | Human-facing summaries |
-| `[System] Backend Report` | | Ops logs, errors |
+| Skill | Purpose |
+|---|---|
+| `capturing-to-gbrain` | Write entities/facts to GBrain |
+| `lark-im` | Send/receive Lark messages |
+| `managing-skills` | Maintain and update own skills |
+| *(add or remove as needed)* | |
 
 ---
 
-### 3d. Cron Jobs
+### 3c. Cron Jobs
 
 > Only fill this in after all relevant skills are verified (✅).
 
-| Job name | Schedule | Triggers | Delivers to |
+| Job | Schedule | Capability | Delivers to |
 |---|---|---|---|
 | | | | |
 
 ---
 
-## Part 4 — Build Mapping
+### 3d. Delivery Channels
 
-> This section translates the spec into actual Hermes Agent build artifacts. Once the spec is approved, use this table as your build checklist.
+> Where does this agent send output? Confirm channel IDs before setting up cron jobs.
+
+| Channel | Purpose |
+|---|---|
+| `[System] Backend Report` | Cron ops logs, errors — internal only |
+| *(add agent-specific channels)* | |
+
+---
+
+## Part 4 — Tools & Permissions
+
+### 4a. Tools Required
+
+| Tool / Skill | Purpose |
+|---|---|
+| `lark-im` | Send/receive messages |
+| `capturing-to-gbrain` | Write entities/facts to GBrain |
+| *(add as needed)* | |
+
+---
+
+### 4b. Credentials & Environment
+
+> **Principle: every agent owns its own complete set of credentials. No inheritance, no sharing, no cross-profile access.** If a credential is used by multiple agents, it is duplicated into each agent's `.env` independently. Keeping agents independent prevents cascading failures and makes each agent fully self-contained.
+
+| Service | Purpose | `.env` key |
+|---|---|---|
+| Anthropic | LLM inference | `ANTHROPIC_API_KEY` |
+| OpenRouter | LLM fallback | `OPENROUTER_API_KEY` |
+| Feishu Bot | Lark messaging | `FEISHU_APP_ID`, `FEISHU_APP_SECRET` |
+| | | |
+
+---
+
+### 4c. Build Mapping
+
+> Translates this spec into actual Hermes Agent build artifacts. Use as a build checklist once the spec is approved.
 
 | Spec Section | Build Artifact | Where it lives |
 |---|---|---|
-| 1b. Role & Goal | `SOUL.md` — Identity, mandate, the number owned | `~/.hermes/profiles/[name]/SOUL.md` |
-| 1c. Team Positioning | `SOUL.md` — Delegation map, boundaries, handoffs | `~/.hermes/profiles/[name]/SOUL.md` |
+| 1b. Role & Goal | `SOUL.md` — identity, mandate, the number owned | `~/.hermes/profiles/[name]/SOUL.md` |
+| 1c. Team Positioning | `SOUL.md` — team positioning, boundaries, handoffs | `~/.hermes/profiles/[name]/SOUL.md` |
 | 2a. Context needs | `SOUL.md` — Memory & Knowledge Sources block | `~/.hermes/profiles/[name]/SOUL.md` |
 | 2a. GBrain content | GBrain vault files | `/mnt/disks/data/dx-gbrain/internal/business-lines/[bl]/` |
-| 2b–2c. Capabilities | Skills (one skill per trigger situation) | `~/.hermes/profiles/[name]/skills/[skill-name]/SKILL.md` |
-| 3a. Tools | Skills + general skills listed in `SOUL.md` | `~/.hermes/profiles/[name]/skills/` |
-| 3b. Credentials | Per-profile `.env` file | `~/.hermes/profiles/[name]/.env` |
-| 3c. Delivery channels | Cron job `deliver` targets + Lark channel IDs in skills | Hermes cron + skill references |
-| 3d. Cron jobs | Hermes cron jobs | `hermes cron create` after skills verified |
+| 3a. Capabilities | `SOUL.md` — Capabilities list | `~/.hermes/profiles/[name]/SOUL.md` |
+| 3b. Skills | Skills directory | `~/.hermes/profiles/[name]/skills/[skill-name]/SKILL.md` |
+| 3c. Cron jobs | Hermes cron config | `agent-teams/[name]/cron/jobs.json` |
+| 3d. Delivery channels | Cron `deliver` targets + channel IDs in skills | Hermes cron + skill references |
+| 4a. Tools | Skills listed in `SOUL.md` | `~/.hermes/profiles/[name]/skills/` |
+| 4b. Credentials | Per-profile `.env` file | `~/.hermes/profiles/[name]/.env` |
 
-### SOUL.md Structure (what to write per section)
-
+**SOUL.md structure:**
 ```
 # [Name] — [Title], [Org]
 
 ## Why This Agent Exists
-[From 1a — the hiring rationale]
+[From 1a]
 
 ## Role & Goal
 [From 1b — title, one-line goal, the number owned]
 
 ## Team Positioning
-[From 1c — who it receives from, hands off to, does NOT own]
+[From 1c — receives from, hands off to, does NOT own]
 
 ## Capabilities
-[From 2b — capability names only, one-liner per capability]
+[From 3a — capability names + one-liner each]
 
 ## Memory & Knowledge Sources
-
-### Before every task — load from GBrain vault:
-[From 2a — direct file reads]
-
-### External entity lookup:
-[From 2a — GBrain MCP calls]
-
-### Interaction history:
-[From 2a — Hindsight bank reads]
+[From 2a — direct file reads, GBrain MCP calls, Hindsight bank reads]
 
 ## Tools
-[From 3a — skill names]
+[From 4a — skill names]
 
 ## Credentials
-[From 3b — .env keys needed]
+[From 4b — .env keys]
 ```
 
-### Skill naming rule
-One skill = one trigger situation (not one capability, not one domain).
-Name in gerund form: `nurturing-leads`, `monitoring-inbox`, `logging-engagement`.
-If two triggers share < 70% of their steps, split into two skills.
+**Skill naming rule:** One skill = one trigger situation. Name in gerund form: `nurturing-leads`, `monitoring-inbox`. If two triggers share < 70% of steps, split into two skills.
 
 ---
 
@@ -188,7 +198,8 @@ If two triggers share < 70% of their steps, split into two skills.
 |---|---|---|
 | Part 1 — Core Need & Positioning | 📝 Draft | |
 | Part 2 — Context & Data Layer | 📝 Draft | |
-| Part 3 — Tools & Permissions | 📝 Draft | |
+| Part 3 — Capabilities | 📝 Draft | |
+| Part 4 — Tools & Permissions | 📝 Draft | |
 | GBrain content exists | ❌ Not yet | |
 | Hindsight banks created | ❌ Not yet | |
 | Credentials in `.env` | ❌ Not yet | |
