@@ -6,7 +6,7 @@ Use a **canonical-source + per-profile copies** model.
 
 - Canonical source lives under `~/.hermes/skills/`
 - Runtime copies live under `~/.hermes/profiles/<agent>/skills/`
-- Packaging later uses real files under `shared-skills/` and `artifacts/agents/<agent>/skills/`
+- Packaging later uses real files under `artifacts/shared-skills/` and `artifacts/agents/<agent>/skills/`
 
 This keeps governance centralized while preserving profile isolation.
 

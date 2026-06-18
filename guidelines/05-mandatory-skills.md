@@ -38,7 +38,7 @@ these edge cases.
 into GBrain. Without it, insights from every session evaporate. This is
 the agent's memory write path.
 
-**Source:** `artifacts/agents/leo/skills/capturing-to-gbrain/` — copy to each agent.
+**Source:** `artifacts/shared-skills/capturing-to-gbrain/` — copy to each agent.
 
 ---
 
@@ -46,15 +46,23 @@ the agent's memory write path.
 
 **Why mandatory:** Agents must be able to create, update, and fix their
 own skills without human scaffolding. This is the self-improvement loop.
-Also contains the shared skill SOP and Leo cron architecture reference.
+Also contains the shared-skill SOP.
 
-**Source:** `artifacts/agents/leo/skills/managing-skills/` — copy to each agent.
-Note: the `references/leo-cron-architecture.md` inside is Leo-specific;
-other agents may remove it.
+**Source:** copy from the canonical shared source into each agent profile.
 
 ---
 
-## 5. `skill-creator`
+## 5. `managing-shared-skills`
+
+**Why mandatory:** This skill defines the governance model for canonical
+shared skills, runtime profile copies, selective rollout, and re-sync
+decisions. Without it, shared skills drift and stop being understandable.
+
+**Source:** `artifacts/shared-skills/managing-shared-skills/` — copy to each agent.
+
+---
+
+## 6. `skill-creator`
 
 **Why mandatory:** The authoritative guide for building and improving skills
 — naming rules, 3-level loading, Quality Bar, Fallback Behavior, testing
@@ -62,26 +70,38 @@ process. Every time an agent builds or patches a skill, it loads this first.
 
 Without it, agents build skills inconsistently and skip quality checks.
 
-**Source:** `artifacts/agents/[any]/skills/skill-creator/` — copy to each agent.
+**Source:** `artifacts/shared-skills/skill-creator/` — copy to each agent.
+
+---
+
+## 7. `routing-report-delivery`
+
+**Why mandatory:** Shared reporting workflows need a consistent rule for
+full human-readable reports vs short cron receipts. Without this, manual
+runs and cron runs drift into different output contracts.
+
+**Source:** `artifacts/shared-skills/routing-report-delivery/` — copy to each agent.
 
 ---
 
 ## Installation Checklist (New Agent Setup)
 
-When onboarding any new agent, verify these five skills are present before
+When onboarding any new agent, verify these seven skills are present before
 the first cron or live task:
 
 ```bash
 ls ~/.hermes/profiles/[agent]/skills/ | grep -E \
-  "lark-im|lark-shared|capturing-to-gbrain|managing-skills|skill-creator"
+  "lark-im|lark-shared|capturing-to-gbrain|managing-skills|managing-shared-skills|skill-creator|routing-report-delivery"
 ```
 
-Expected output — all five names should appear:
+Expected output — all seven names should appear:
 ```
 capturing-to-gbrain
 lark-im
 lark-shared
 managing-skills
+managing-shared-skills
+routing-report-delivery
 skill-creator
 ```
 
@@ -105,5 +125,5 @@ managed manually.
 When a new skill is determined to be universally required:
 1. Add it to this file with the Why mandatory and Source fields filled in
 2. Copy it into all existing live agent profiles
-3. Copy it into all `artifacts/agents/[name]/skills/` directories in this package
+3. If it is a true shared canonical skill, add it under `artifacts/shared-skills/` and then copy runtime copies into the relevant agent artifacts / profiles
 4. Add it to the Installation Checklist grep above

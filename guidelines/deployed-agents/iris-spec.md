@@ -107,7 +107,7 @@ Iris is effective only if she understands how work moves across the company.
 | # | Capability | What it means in plain English | Skills | Priority |
 |---|---|---|---|---|
 | C1 | Operations, Team & Agent Management | Manage internal operations as one system: keep ownership clear, review progress, route work, coordinate agents, and ensure the team is working on the right things | `managing-tasks`, `reviewing-tasks`, `planning-next-actions`, `generating-task-briefing`, `generating-daily-ops-briefing` | 🔴 Must-have |
-| C2 | Infrastructure Management | Keep the operating environment healthy: VM status, cron jobs, tool integrations, and third-party system reliability | `checking-context-health`, `managing-cron-jobs`, `github-core-repos` | 🔴 Must-have |
+| C2 | Infrastructure Management | Keep the operating environment healthy: VM status, cron jobs, tool integrations, package publication workflows, and third-party system reliability | `checking-context-health`, `managing-cron-jobs`, `packaging-to-github` | 🔴 Must-have |
 | C3 | Context, Memory & Knowledge Management | Maintain the company context layer end-to-end: capture conversations, preserve founder and company memory, write durable knowledge, and keep the knowledge system healthy | `extracting-lark-to-gbrain`, `ingesting-sessions-to-hindsight`, `capturing-to-gbrain`, `maintaining-gbrain`, `syncing-brain-memory`, `managing-team-knowledge` | 🔴 Must-have |
 | C4 | Financial Analysis | Answer financial questions, support runway or budget visibility, and surface finance-related risks when that layer is built | `[future]` | 🟡 Future |
 
@@ -139,8 +139,14 @@ Iris is effective only if she understands how work moves across the company.
 |---|---|
 | `lark-im` | Lark messaging and coordination |
 | `lark-base` | Lark Base / structured data operations |
-| `github-core-repos` | Read and update core repos such as `dx-gbrain` and the agent package |
+| `packaging-to-github` | Publish generalized reusable framework assets into the client package repo |
 | `managing-skills` | Maintain skills and references as the operating system evolves |
+
+**Iris package-local governance skills**
+
+| Skill | Purpose |
+|---|---|
+| `capturing-operating-changes` | Convert structural / operating decisions into durable changes across GBrain, Hindsight, and the task layer |
 
 ---
 
@@ -190,7 +196,7 @@ Iris is effective only if she understands how work moves across the company.
 | `managing-cron-jobs` | Cron lifecycle management |
 | `lark-im` | Lark communication |
 | `lark-base` | Lark Base operations |
-| `github-core-repos` | Update core repos when the operating system changes |
+| `packaging-to-github` | Publish reusable framework updates into the package repo |
 
 ---
 

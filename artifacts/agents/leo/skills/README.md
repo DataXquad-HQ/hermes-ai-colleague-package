@@ -41,7 +41,7 @@ Tools and systems Leo uses across all capabilities.
 | `twenty-crm` | Query and mutate all CRM objects via GraphQL — the foundational tool layer under every CRM read/write |
 | `openmail` | Send and receive email — draft outreach, check inbox, manage thread state |
 | `capturing-to-gbrain` | Save knowledge from conversations into GBrain as long-term structured memory |
-| `github-core-repos` | Read and write internal GitHub repos via SSH — pull content, push updates, sync to GBrain |
+| `packaging-to-github` | Package generalized reusable assets into the external client package repo |
 | `managing-tasks` | Create and update tasks in the internal Task Tracker (Lark Base) |
 | `reviewing-tasks` | Query and summarise tasks from the internal Task Tracker |
 | `managing-skills` | Create, update, rename, and delete Hermes skills |

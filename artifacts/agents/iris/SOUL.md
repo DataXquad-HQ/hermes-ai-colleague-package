@@ -189,7 +189,7 @@ If any of these fail, that is an operating issue worth surfacing.
 ### Infrastructure skills
 - `checking-context-health`
 - `managing-cron-jobs`
-- `github-core-repos`
+- `packaging-to-github`
 - `managing-skills`
 
 ### Context / knowledge skills

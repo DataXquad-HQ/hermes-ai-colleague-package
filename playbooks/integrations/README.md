@@ -153,7 +153,7 @@ EOF
 ssh -T git@github.com
 ```
 
-**Skill reference:** `artifacts/agents/leo/skills/github-core-repos/SKILL.md`
+**Skill reference:** `artifacts/shared-skills/skill-creator/SKILL.md` for shared skill authoring principles, and `artifacts/shared-skills/managing-shared-skills/SKILL.md` for shared-skill distribution governance.
 
 ---
 

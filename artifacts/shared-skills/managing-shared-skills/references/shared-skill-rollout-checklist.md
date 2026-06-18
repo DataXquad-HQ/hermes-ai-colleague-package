@@ -17,4 +17,4 @@ Use this checklist every time Iris promotes a skill into the shared layer.
 ## After rollout
 - [ ] Record which profiles were updated
 - [ ] Note whether any profile is now a deliberate fork
-- [ ] If the skill should later be packaged, add it to `shared-skills/` in the package repo
+- [ ] If the skill should later be packaged, add it to `artifacts/shared-skills/` in the package repo
