@@ -7,8 +7,8 @@ description: >
   Do NOT use for ephemeral task state or one-session fixes — those go in Memory
   or GBrain notes at most.
 triggers:
-  - "save to GBrain"
-  - "record in long-term memory"
+  - "存進 GBrain"
+  - "記進長期記憶"
   - "save to brain"
   - "put in gbrain"
   - user explicitly says to remember something permanently
@@ -65,7 +65,7 @@ Store when the information is **durable and reusable across future sessions**:
 | Competitor intel | `concept` | `competitors/salesforce` |
 | Partnership strategy | `concept` | `partnerships/aquaoptima-partner-strategy` |
 | System / process doc | `concept` | `systems/hermes-memory-architecture` |
-| Venture studio / fund | `company` | `companies/{{company_domain}}-venture-studio` |
+| Venture studio / fund | `company` | `companies/dataxquad-venture-studio` |
 | Fund portfolio map | `company` | Nest inside the studio page; use a Portfolio section with a markdown table (Company / Stage / Key Target). Do NOT create separate pages for grooming-stage companies — wait until they have a CEO or active raise. |
 
 ---
@@ -109,9 +109,20 @@ Common types: `works_at`, `invested_in`, `advises`, `founded`, `partner_of`
 5. **Extract facts** if content has structured claims
 6. **Add timeline entry** if something happened on a specific date
 7. **Add links** if relationships to other pages are established
-8. Confirm to user: "Saved to GBrain: `slug`"
+8. Confirm to user: "已存入 GBrain：`slug`"
 
 ---
+
+## Drafting Vault Content from Internal Docs
+
+When vault files are empty/placeholder, Leo can draft them from existing source documents.
+See `references/vault-draft-workflow.md` for the full procedure.
+
+Key conventions:
+- Always use `status: draft` + `review_needed: true` frontmatter on drafted files
+- Add `source:` field naming the source doc(s) + `Hunter ([date] session)` if conversation context was used
+- Apply user corrections as targeted `patch` calls — never rewrite a full file for incremental changes
+- `status: work-in-progress` pages in GBrain MCP contain no actionable data — check `compiled_truth`, not just existence
 
 ## Pitfalls
 

@@ -15,8 +15,8 @@ triggers:
   - "check in with"
   - "reach out to"
   - "draft a message for"
-  - "write an email for me to"
-  - "follow up with"
+  - "幫我寫封信給"
+  - "跟進一下"
   - "lead nurturing"
   - "C4"
   - "who needs nurturing"
@@ -53,7 +53,7 @@ Business Development Lead | {{COMPANY_NAME}}
 AI-Powered Digital Employee
 
 📧 {{AGENT_EMAIL}}
-🌐 https://{{company_domain}}.com
+🌐 {{COMPANY_URL}}
 
 --
 Hi, I'm Leo — an AI-powered Business Development agent at {{COMPANY_NAME}}.
@@ -76,7 +76,7 @@ Stores drafts and scheduled messages. Lifecycle: DRAFT → SCHEDULED → SENT / 
 |---|---|---|
 | `name` | TEXT | Auto-set to subject line |
 | `subject` | TEXT | Email subject |
-| `body` | RICH_TEXT | Draft content — use `bodyV2: { markdown: "..." }` |
+| `body` | RICH_TEXT | Draft content — use `body: { markdown: "..." }` |
 | `context` | TEXT | Leo's notes: why now, what context used |
 | `status` | SELECT | DRAFT / SCHEDULED / SENT / CANCELLED |
 | `messageType` | SELECT | NURTURING / COLD_OUTREACH |
@@ -174,7 +174,7 @@ mcp_gbrain_get_page(slug="companies/[company-slug]", fuzzy=True)
 
 #### DX Blog (always check)
 ```python
-web_extract(urls=["http://blog.{{company_domain}}.com"])
+web_extract(urls=["{{COMPANY_BLOG_URL}}"])
 ```
 Look for posts in last 60 days relevant to this lead's industry. If found: reference naturally.
 
@@ -216,7 +216,7 @@ Business Development Lead | {{COMPANY_NAME}}
 AI-Powered Digital Employee
 
 📧 {{AGENT_EMAIL}}
-🌐 https://{{company_domain}}.com
+🌐 {{COMPANY_URL}}
 
 --
 Leo is an AI-powered member of the {{COMPANY_NAME}} BD team.
@@ -230,7 +230,7 @@ mutation {
   createOutreachMessage(data: {
     name: "[subject]"
     subject: "[subject]"
-    bodyV2: { markdown: "[full email body]" }
+    body: { markdown: "[full email body]" }
     context: "[why now + what context used]"
     status: DRAFT
     messageType: NURTURING
@@ -253,24 +253,24 @@ Post to `[Sales] Nurturing Outreach Review` (`{{OUTREACH_REVIEW_CHANNEL_ID}}`).
 
 Single draft:
 ```
-✉️ 1 draft pending review — [Date]
+✉️ 1 封草稿待審查 — [Date]
 
 **[Person Name]** — [Company]
-Subject: [subject line]
-CRM: {{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
+主旨：[subject line]
+CRM：{{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
 
-Reply **OK** to send, or update status to SCHEDULED directly in CRM.
+回覆 **OK** 發送，或直接在 CRM 將 status 改為 SCHEDULED。
 ```
 
 Multiple drafts:
 ```
-✉️ [N] draft(s) pending review — [Date]
+✉️ [N] 封草稿待審查 — [Date]
 
 1. **[Person Name]** — [Company] | {{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
 2. **[Person Name]** — [Company] | {{CRM_EXTERNAL_URL}}/objects/outreachMessages/[UUID]
 
-Reply OK to send all, or specify which ones (e.g. "1 and 3 OK").
-You can also update status to SCHEDULED directly in CRM.
+回覆 OK 全部發送，或指定哪幾封（e.g. "1 and 3 OK"）。
+也可直接在 CRM 將 status 改為 SCHEDULED。
 ```
 
 **Rules:**
@@ -337,7 +337,7 @@ Reply OK to send, or CANCEL to discard.
   }) {
     edges { node {
       id name subject scheduledAt sendMethod
-      bodyV2 { markdown }
+      body { markdown }
       recipient { id name { firstName lastName } emails { primaryEmail } companyId }
     }}
   }
@@ -351,7 +351,7 @@ Filter: `scheduledAt` <= now.
 import uuid, requests
 
 headers = {
-    "Authorization": "Bearer {{OPENMAIL_TOKEN}}",
+    "Authorization": "Bearer {{OPENMAIL_API_KEY}}",
     "Content-Type": "application/json",
     "Idempotency-Key": str(uuid.uuid4())  # REQUIRED
 }
@@ -420,11 +420,11 @@ POST http://localhost:8888/v1/default/banks/{{ORG_PREFIX}}-pipeline/memories
 
 ## Blog Access
 
-{{COMPANY_NAME}} blog: `http://blog.{{company_domain}}.com` (Ghost CMS)
+{{COMPANY_NAME}} blog: `{{COMPANY_BLOG_URL}}` (Ghost CMS)
 
 ```python
 # Fetch recent posts
-web_extract(urls=["http://blog.{{company_domain}}.com"])
+web_extract(urls=["{{COMPANY_BLOG_URL}}"])
 # Look for: title, excerpt, URL, publish date
 # Select posts < 60 days old that match lead's industry
 ```
@@ -456,6 +456,35 @@ Human responds:
 - **CANCEL** → set status to CANCELLED
 
 ---
+
+## Quality Bar
+
+Before storing a draft OutreachMessage (Flow A) or sending a message (Flow B):
+
+**Draft quality (Flow A):**
+- Subject line is specific — references something real (event, DX blog post, company news, prior meeting) — not a generic "just checking in"?
+- Opening line references a concrete, verifiable detail (how they met, a recent company event) — not invented?
+- Any blog post or news reference is confirmed to exist (web_extract verified it) — not assumed from memory?
+- No team member names appear in the draft — only "the team", "our BD team", "{{COMPANY_NAME}}"?
+- AI disclaimer block is included in full — not shortened or paraphrased?
+- If context from Hindsight was used: labelled as "Based on prior interaction context…" not presented as confirmed current fact?
+
+**Send quality (Flow B):**
+- Message being sent has `status: SCHEDULED` — confirmed human-approved — not DRAFT?
+- `Idempotency-Key` is a fresh UUID — not reused from a prior send?
+- Recipient email address verified from CRM (not assumed from memory)?
+
+If any check fails, do not send — fix the issue or escalate to review channel.
+
+## Fallback Behavior
+
+- **If CRM is unreachable**: cannot query overdue leads or OutreachMessage queue — abort the run; post to Backend Report: "CRM unavailable — nurturing scanner could not run. No drafts created."
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` returns no context for a lead**: proceed with web research only; note in the `context` field of the OutreachMessage: "No prior interaction history in Hindsight."
+- **If GBrain company page is missing**: proceed without it; note absence in draft context field; do not block draft creation.
+- **If {{COMPANY_NAME}} blog (`{{COMPANY_BLOG_URL}}`) is unreachable**: skip blog reference; use lead's company news or a general check-in format instead. Do not fabricate a blog post.
+- **If OpenMail is unreachable** (Flow B): do not mark OutreachMessage as SENT; leave status as SCHEDULED; post to Backend Report with error detail so next run can retry.
+- **If lead's email address is missing from CRM**: skip that lead; flag in Backend Report: "[Person] — no email address in CRM, cannot draft."
+- Do not silently skip a lead — every skipped lead must appear in the Backend Report ops log with the reason.
 
 ## Pitfalls
 

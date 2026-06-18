@@ -10,14 +10,13 @@ triggers:
   - "log interaction"
   - "we had a meeting"
   - "I talked to"
-  - "I just talked to"
-  - "log interaction"
+  - "我剛跟"
   - "meeting scheduled"
   - "demo arranged"
   - "update on opportunity"
   - "update on partnership"
-  - "follow up"
-  - "meeting"
+  - "跟進"
+  - "開會"
   - "demo"
   - "call with"
   - "engagement"
@@ -42,8 +41,8 @@ The only differences:
 - End state: CUSTOMER vs Signed Partner (then hands to Partner Success Agent)
 
 ### Memory layers (two systems, different roles)
-- **GBrain** = structured, permanent archive per company/opportunity. Timeline entries, facts, currentStatusSummary. Read via slug before engaging with an opportunity.
-- **Hindsight** = fast semantic recall for warm-up context before acting. Query: "What were the key points from last time with this deal?" Both must be updated after every logged engagement — not optional.
+- **GBrain** = structured, permanent 档案室 per company/opportunity. Timeline entries, facts, currentStatusSummary. Read via slug before engaging with an opportunity.
+- **Hindsight** = fast semantic recall for warm-up context before acting. Query:「這個案子上次的重點是什麼」. Both must be updated after every logged engagement — not optional.
 - Primary Hindsight bank for this skill: `{{ORG_PREFIX}}-pipeline` (C5/C6 work).
 
 ### Capability numbering (v13.0, updated 2026-06-15)
@@ -81,7 +80,7 @@ All confirmations, clarifications, and daily briefings go to:
 
 ## Flow A — Sales Rep Reports a Past Interaction
 
-**Trigger:** Sales Rep says "I just talked to X", "we had a meeting", "just spoke with XXX", etc.
+**Trigger:** Sales Rep says "I just talked to X", "we had a meeting", "剛跟XXX談過", etc.
 
 ### Step 1 — Extract from what the Rep said
 From the Rep's message, pull out:
@@ -95,9 +94,9 @@ From the Rep's message, pull out:
 Don't fire a questionnaire. Identify the **single most critical missing piece** and ask just that.
 
 Priority of what to clarify:
-1. **Outcome** — if unclear: "What was the conclusion from this meeting? Was there any agreement reached?"
-2. **Next action** — if unclear: "What's the next step? Who needs to do what?"
-3. **Attendees** — if unclear and relevant (e.g. stakeholder meetings): "Who attended this time?"
+1. **Outcome** — if unclear: "這次談的結論是什麼？有沒有達成什麼共識？"
+2. **Next action** — if unclear: "下一步是什麼？誰要做什麼？"
+3. **Attendees** — if unclear and relevant (e.g. stakeholder meetings): "這次有哪些人出席？"
 
 If outcome AND next action are both clear from what the Rep said → skip clarification, go straight to Step 3.
 
@@ -105,23 +104,23 @@ If outcome AND next action are both clear from what the Rep said → skip clarif
 Present a structured summary for the Rep to approve:
 
 ```
-📋 Please confirm the following to be saved to CRM:
+📋 確認以下資訊存入 CRM：
 
-**Engagement Record**
-- Counterpart: [Company] — [Person(s)]
-- Date: [date]
-- Type: [call / meeting / demo / messaging]
-- Outcome: [what happened / conclusion]
-- Next Action: [single next step]
+**互動紀錄 (Engagement)**
+- 對象：[Company] — [Person(s)]
+- 日期：[date]
+- 形式：[call / meeting / demo / messaging]
+- Outcome：[what happened / conclusion]
+- Next Action：[single next step]
 
-**Note (detailed record)**
+**Note（詳細紀錄）**
 [narrative summary]
 
-**Tasks to create:**
+**Tasks 要建立：**
 - [ ] [Task 1 — owner, due date]
 - [ ] [Task 2 — owner, due date]
 
-Confirm and I'll save it — any changes?
+確認後我就存進去，有需要修改嗎？
 ```
 
 ### Step 4 — Write to CRM (after confirmation)
@@ -140,7 +139,7 @@ Confirm and I'll save it — any changes?
 
 ## Flow B — Sales Rep Mentions a Future Meeting
 
-**Trigger:** "I'm meeting with XXX on Wednesday next week", "demo arranged for 6/16", "scheduled a call", etc.
+**Trigger:** "我下週三要跟XXX開會", "demo arranged for 6/16", "scheduled a call", etc.
 
 ### What to do
 1. Acknowledge the scheduled interaction
@@ -149,9 +148,9 @@ Confirm and I'll save it — any changes?
 
 ### Report-Back Task format
 ```
-Title:    [Report-back] [Company] — [type] [date] post-meeting notes
+Title:    [報回] [Company] — [type] [date] 後補紀錄
 Due:      EOD of the meeting day
-Body:     "After the meeting, please come back and tell Leo: what happened, what the outcome was, and what the next step is."
+Body:     「會議後請回來跟 Leo 說：發生了什麼、outcome 是什麼、下一步是什麼。」
           + relevant context: what the goals of the meeting are, who's attending, what to watch for
 Linked:   → Opportunity or Partnership record
 ```
@@ -180,9 +179,9 @@ ensuring the Rep doesn't forget to report back.
 
 ### Stall Task format
 ```
-Title:    [Follow-up] [Opportunity/Partnership name] — X days without interaction record
-Body:     "Last interaction: [date]. Current status: [currentStatusSummary].
-           Please confirm progress or update the next step."
+Title:    [跟進] [Opportunity/Partnership name] — X 天沒有互動紀錄
+Body:     「上次互動：[date]。目前狀態：[currentStatusSummary]。
+           請確認進展，或更新下一步。」
 Agent advice: [specific suggestion based on last known status]
 ```
 
@@ -199,12 +198,12 @@ Every Task Leo creates must have:
 ### Task type prefixes
 | Prefix | When to use |
 |---|---|
-| `[Report-back]` | Report-back task after a planned meeting — Rep must come back and log what happened |
-| `[Follow-up]` | Follow-up with client / waiting for response |
-| `[Prep]` | Prep work before a meeting (deck, proposal, research) |
-| `[Send]` | Send a document, email, or proposal |
+| `[報回]` | Report-back task after a planned meeting — Rep must come back and log what happened |
+| `[跟進]` | Follow-up with client / waiting for response |
+| `[準備]` | Prep work before a meeting (deck, proposal, research) |
+| `[發送]` | Send a document, email, or proposal |
 | `[STALL]` | Silence-detected stall alert |
-| `[Decision]` | Internal decision needed before proceeding |
+| `[決策]` | Internal decision needed before proceeding |
 
 ---
 
@@ -212,7 +211,7 @@ Every Task Leo creates must have:
 
 - **Ask ONE question at a time.** Never send a bulleted questionnaire.
 - **Lead with what you already extracted.** Show your work so the Rep only corrects/adds, not re-explains.
-- **Be direct.** "What was the conclusion from this meeting?" not "Could you please elaborate on the outcome of your discussion?"
+- **Be direct.** "這次談的結論是什麼？" not "Could you please elaborate on the outcome of your discussion?"
 - **If you have enough to write — write.** Offer the draft and let the Rep correct it rather than asking upfront.
 
 ---
@@ -248,7 +247,7 @@ mutation {
 # 3. Create Task
 mutation {
   createTask(data: {
-    title: "[Follow-up] ..."
+    title: "[跟進] ..."
     status: TODO
     dueAt: "2026-06-19T12:00:00Z"
     body: "Context + agent advice"
@@ -260,6 +259,27 @@ mutation {
 See `twenty-crm` skill for full auth + query patterns.
 
 ---
+
+## Quality Bar
+
+Before presenting the CRM write confirmation to the Sales Rep (Step 3 in Flow A):
+- The structured summary shows extracted facts (what was said/done) and Leo's interpretation (healthCheck judgment, stage suggestion) in separate lines — not blended into a single narrative?
+- `healthCheck` value comes from applying the judgment table to the new information — not inferred from the prior value alone?
+- Every Task has a due date — no open-ended tasks with no timeline?
+- Any stage advancement recommendation cites the specific criterion met (e.g. "SCREENING → MEETING because meeting completed") — not stated as obvious?
+- Report-Back Task (Flow B) created immediately on mention of a future meeting — not deferred to after the meeting?
+- No team member names appear in Task bodies, Notes, or Lark notifications?
+
+If any check fails, revise before presenting the confirmation summary.
+
+## Fallback Behavior
+
+- **If CRM is unreachable**: do not attempt to write; present the structured summary as a text block the Sales Rep can reference; offer to retry when CRM is back; do not lose the Sales Rep's update.
+- **If GBrain is unreachable**: skip `add_timeline_entry` and `extract_facts`; log this in the session summary; CRM is the primary record — GBrain is supplementary.
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` is unreachable**: skip the Hindsight write; note it in the session reply; the CRM Engagement is the authoritative record.
+- **If the linked Opportunity or Partnership cannot be found in CRM** (search returns empty): ask the Sales Rep to confirm company name or provide the CRM ID; do not create an unlinked Engagement floating with no parent.
+- **If multiple Opportunities match the company name**: present the list with stage and currentStatusSummary for each; ask the Sales Rep to confirm which one — never guess.
+- **If the Sales Rep's update is too sparse to extract outcome + next action**: ask ONE targeted question (see Step 2 priority order) — do not write to CRM with unknown outcome or no next action.
 
 ## Pitfalls
 

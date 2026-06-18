@@ -13,6 +13,9 @@ triggers:
   - "is our strategy working"
   - "strategy health"
   - "C6 strategy"
+  - "策略檢查"
+  - "本月策略 review"
+  - "策略還對嗎"
 ---
 
 # Pipeline Strategy Check Skill
@@ -33,7 +36,7 @@ Three sub-questions:
 ## When to Use
 
 - **Cron:** 1st of each month at 09:00 CST (01:00 UTC)
-- **Human trigger:** "strategy check", "is our strategy working", "strategy check"
+- **Human trigger:** "strategy check", "is our strategy working", "策略檢查"
 - **Prerequisite:** `checking-pipeline-health` must have run for at least 2 weeks to have meaningful snapshots in Hindsight. If fewer than 2 snapshots exist, still run memory layer health check but skip trend analysis.
 
 ---
@@ -41,33 +44,46 @@ Three sub-questions:
 ## When to Run
 
 - **Cron:** 1st of each month at 09:00 CST (01:00 UTC)
-- **Human trigger:** "strategy check", "is our strategy working"
+- **Human trigger:** "strategy check" / "is our strategy working"
 
 ---
 
 ## Step 1 — Check GBrain strategy pages
 
-Verify all six concept pages exist and are not stale (updated within 90 days):
+Vault pages live at `internal/business-lines/[bl]/` — NOT `concepts/`. Check the
+active business line's folder. For your active business line, the canonical pages are (replace `[BL]` with your BL slug):
 
 ```python
-pages = [
-    "concepts/sales-goals",
-    "concepts/icp",
-    "concepts/sales-strategy",
-    "concepts/partnership-goals",
-    "concepts/partnership-strategy",
-    "concepts/pipeline-benchmarks",
+# Vault pages for active BL (replace [BL] with your business line slug)
+bl_pages = [
+    "internal/business-lines/[BL]/icp",
+    "internal/business-lines/[BL]/gtm",
+    "internal/business-lines/[BL]/strategy",
+    "internal/business-lines/[BL]/product",
+    "internal/business-lines/[BL]/market",
+    "internal/business-lines/[BL]/overview",
 ]
 
-for slug in pages:
+# Company-level
+company_pages = [
+    "internal/company/overview",
+]
+
+for slug in bl_pages + company_pages:
     page = mcp_gbrain_get_page(slug=slug)
-    # Check: exists? updated_at within 90 days?
+    # Check: exists? status != "work-in-progress"? updated_at within 90 days?
 ```
 
 Flag any page that:
 - Does not exist → `❌ Missing`
-- Has `updated` frontmatter older than 90 days → `⚠️ Stale`
-- Exists and is current → `✅ OK`
+- Has `status: work-in-progress` or `review_needed: true` → `⚠️ Draft — needs human review`
+- Has `updated_at` older than 90 days → `⚠️ Stale`
+- Exists, is current, and has real content → `✅ OK`
+
+> **Pitfall:** Pages with `status: work-in-progress` in frontmatter are placeholders —
+> they exist in GBrain but contain no actionable data. Treat them the same as missing
+> for strategy-check purposes. Always read the `compiled_truth` field, not just
+> whether the page exists.
 
 ---
 
@@ -158,10 +174,10 @@ Deliver to `[Sales] Pipeline Review` channel. Format:
 🗂️ MEMORY LAYER HEALTH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GBrain strategy pages:
-  ✅ concepts/sales-goals        (updated [date])
-  ✅ concepts/icp                (updated [date])
-  ⚠️ concepts/pipeline-benchmarks (last updated [date] — 90+ days ago)
-  ❌ concepts/partnership-strategy (missing)
+  ✅ internal/business-lines/[BL]/strategy   (updated [date])
+  ✅ internal/business-lines/[BL]/icp         (updated [date])
+  ⚠️ internal/business-lines/[BL]/gtm         (last updated [date] — 90+ days ago)
+  ❌ internal/business-lines/[BL]/market      (missing)
 
 Hindsight {{ORG_PREFIX}}-global:
   ✅ Revenue target recalled
@@ -241,10 +257,31 @@ mutation {
 
 | Channel | What goes here |
 |---|---|
-| `[Sales] Pipeline Review` (ask human for ID) | Full Strategy Check report |
+| `[Sales] Pipeline Review` (chat_id stored in `internal/company/sales-strategy-meta` in GBrain once confirmed) | Full Strategy Check report |
 | `[System] Backend Report` `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Ops log — memory check results, tasks created |
 
 ---
+
+## Quality Bar
+
+Before returning the Strategy Check report:
+- Every strategic signal in the "STRATEGIC SIGNALS" section traceable to a specific snapshot or pattern from the last 4 weeks (not a general impression)?
+- Memory layer health status for each GBrain page labelled as one of: ✅ OK / ⚠️ Stale / ⚠️ Draft / ❌ Missing — not conflated?
+- Leo's Strategic Assessment (3–5 sentences) clearly labelled as assessment/interpretation, not presented as confirmed fact?
+- Recommended discussion items phrased as specific questions or observations, not vague directives like "review strategy"?
+- Coverage ratio statements include the label "(benchmark probability estimate, not actuals)"?
+- No invented snapshot data — if fewer than 2 weekly snapshots exist, trend analysis section explicitly says "Insufficient data — [N] snapshot(s) found"?
+
+If any check fails, revise that section before delivering.
+
+## Fallback Behavior
+
+- **If GBrain is unreachable**: skip memory layer health check entirely; note "GBrain unavailable — memory layer status cannot be assessed" in the report; proceed with Hindsight + CRM data only.
+- **If Hindsight `{{ORG_PREFIX}}-global` returns empty** on strategy queries: flag each missing item individually (e.g. "Revenue target not found in {{ORG_PREFIX}}-global — may not have been ingested"). Do not silently skip.
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` returns fewer than 2 weekly health check snapshots**: skip trend analysis; state "Trend analysis requires at least 2 weekly health checks — only [N] found. Run weekly Health Check for [X] more week(s) before Strategy Check is meaningful."
+- **If CRM is unreachable**: omit any CRM-sourced data from the report; note the gap; deliver memory-layer and pattern sections with available data.
+- **If sales-strategy.md ingest has never been run** (`internal/business-lines/[BL]/strategy` missing or is work-in-progress in GBrain): flag prominently at top of report — "No sales strategy ingested. Health Check targets and benchmarks are unavailable. Run `ingesting-sales-strategy` first."
+- Do not block the full report because one source failed — degrade cleanly, flag each gap, deliver what's available.
 
 ## Pitfalls
 

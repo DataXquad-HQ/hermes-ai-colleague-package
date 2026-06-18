@@ -8,12 +8,12 @@ description: >
 triggers:
   - "enrich"
   - "account intelligence"
-  - "company information"
-  - "fill in data"
-  - "research this"
+  - "公司資料"
+  - "補資料"
+  - "研究一下"
   - "background on"
   - "tell me about this company"
-  - "look it up for me"
+  - "幫我查"
   - "company intel"
   - "enrichment"
   - "account update"
@@ -55,7 +55,7 @@ Never use `localhost:3001` in any human-facing output.
 | Trigger | Level | Scope |
 |---|---|---|
 | New Lead just created (manual trigger by the Sales Rep) | Level 1 | Single company |
-| Sales Rep asks "look up [company] for me" | Level 1 | Single company |
+| Sales Rep asks「幫我查一下 [company]」| Level 1 | Single company |
 | Monthly cron (auto) | Level 2 | All active companies with NURTURE/OPPORTUNITY people |
 | the Sales Rep asks for latest news on a company | Level 2 | Single company |
 
@@ -86,7 +86,7 @@ prepare for meetings, and make scouting decisions.
 **Relevance to DX:**
 - Which DX business line(s) could this company use?
 - What's the most likely pain point or use case?
-- ICP fit assessment (check `internal/business-lines/[bl]/icp.md` if exists)
+- ICP fit assessment (check `internal/business-lines/[BL]/icp` if exists)
 
 **Key contacts (from CRM):**
 - For each Person linked to this company with leadTier ≠ PASSERBY:
@@ -275,9 +275,9 @@ Total active accounts monitored: [N]
 
 Before assessing DX fit for any company, check:
 ```python
-# Read ICP directly from GBrain vault: internal/business-lines/[bl]/icp.md
-# Read strategy directly from GBrain vault: internal/business-lines/[bl]/strategy.md
-# Read product info directly from GBrain vault: internal/business-lines/[bl]/product.md
+mcp_gbrain_get_page(slug="internal/business-lines/[BL]/icp")           # ICP definition
+mcp_gbrain_get_page(slug="internal/business-lines/[BL]/strategy") # Sales strategy
+mcp_gbrain_get_page(slug="internal/business-lines/[BL]/product")   # Relevant product wiki
 ```
 If pages don't exist: continue, infer from known opportunity patterns, flag ⚠️ in output.
 
@@ -308,10 +308,49 @@ ICP fit: [strong / moderate / weak / unknown — no ICP doc]
 - ✅ Hindsight: {{ORG_PREFIX}}-pipeline memory stored
 - ✅ GBrain: [company-slug] page updated + timeline entry added
 
-[⚠️ No ICP document found — fit assessed from opportunity history. Consider building `internal/business-lines/[bl]/icp.md`.]
+[⚠️ No ICP document found — fit assessed from opportunity history. Consider building `internal/business-lines/[BL]/icp`.]
 ```
 
 ---
+
+## Partner Entity Enrichment (No Contact Person in CRM)
+
+When enriching a **partner company** that has no individual contact person yet:
+- Run Level 1 (foundational profile) regardless — the company record needs context
+- Skip Person-level enrichment entirely — don't look up individuals if no one is in CRM
+- In `enrichmentOverview`, note: "Partner company — no contact person captured yet"
+- Write Hindsight to `{{ORG_PREFIX}}-pipeline` (not `{{ORG_PREFIX}}-global`) if the partner is linked to an active opportunity/GeoKernel pipeline
+- Set GBrain slug under `external/entities/external/entities/companies/[slug]` (not `external/entities/companies/[slug]`) for external entities
+
+**Activation gate pattern:** When a partner's engagement is gated on a product milestone
+(e.g. "will promote once AI features are confirmed working"), capture the gate explicitly in:
+- CRM `currentStatusSummary`
+- CRM `nextActionSummary` (what needs to happen to unblock)
+- Hindsight memory tags (tag with the gate condition, e.g. `ai-feature-gate`)
+- GBrain facts table in the company page
+
+---
+
+## Quality Bar
+
+Before writing to CRM, Hindsight, or GBrain:
+- DX fit assessment (business line + use case) based on explicit product knowledge or confirmed opportunity patterns — not a guess from the company name alone?
+- ICP fit rating (strong/moderate/weak) traceable to specific ICP criteria (industry, size, geography, problem)? If ICP document is missing, label clearly as "Estimated from opportunity history — no ICP document"?
+- News items from Level 2 pass the significance filter — are they "would the Sales Rep want to know this before their next call?" level? Noise excluded?
+- `enrichmentOverview` in CRM is an update or improvement of existing content — not an overwrite of more detailed prior data with something shorter?
+- `lastEnrichedDate` is set — otherwise next monthly cron will redundantly re-run within the same month?
+- Any finding that changes the DX opportunity assessment is flagged for the Sales Rep — not silently stored in Hindsight only?
+
+If any check fails, revise before writing.
+
+## Fallback Behavior
+
+- **If web search returns thin or no results**: try `web_extract` on the company homepage directly; if that also fails, note "Web research returned no results for [Company] on [date]" in the CRM `enrichmentOverview` and Hindsight. Do not fabricate findings.
+- **If GBrain is unreachable**: write to CRM and Hindsight only; skip the GBrain page update and timeline entry; note the gap — "GBrain update skipped (unavailable)." The CRM `enrichmentOverview` is the fallback record.
+- **If Hindsight is unreachable**: write to CRM and GBrain only; note the gap in the output report. The CRM remains the primary record.
+- **If the GBrain ICP page (`internal/business-lines/[BL]/icp` or `internal/business-lines/[bl]/icp`) is missing**: proceed using known opportunity patterns to infer fit; label the assessment as "⚠️ No ICP document — fit estimated from opportunity history"; flag the missing page in the output.
+- **If CRM `enrichmentOverview` or `companyOverview` already contains richer detail than the new web research**: do not overwrite with shorter content; append as a new section labelled "[Date] update: [finding]".
+- **If `lastEnrichedDate` is missing on the company record** (field not set yet): treat as never enriched — proceed with full Level 1 enrichment.
 
 ## Pitfalls
 
@@ -319,7 +358,7 @@ ICP fit: [strong / moderate / weak / unknown — no ICP doc]
 - **Don't overwrite good existing data** — before updating `companyOverview`, read the current value. If it's already detailed, append/improve rather than replace.
 - **lastEnrichedDate is the freshness gate** — always set it after enrichment. Monthly cron uses it to avoid redundant re-runs.
 - **Web search quality varies** — if web_search returns thin results, try web_extract on the company homepage directly. LinkedIn pages often have the clearest company descriptions.
-- **GBrain slug naming** — use lowercase hyphenated company name: `external/entities/companies/acme-corp`, not `external/entities/companies/Acme Corp`. Fuzzy match on get_page helps if slug is unknown.
+- **GBrain slug naming** — use lowercase hyphenated company name: `external/entities/companies/acme-corp`, not `companies/Acme Corp`. Fuzzy match on get_page helps if slug is unknown.
 - **Hindsight bank choice** — OPPORTUNITY companies → `{{ORG_PREFIX}}-pipeline`. General company intel with no active opportunity → `{{ORG_PREFIX}}-global`.
 - **Level 2 significance filter is important** — don't flood Hindsight with noise. If in doubt, ask: "would the Sales Rep want to know this before their next call with this company?" If no, skip.
 - **Monthly cron dedup** — check `lastEnrichedDate` to avoid running twice in one month. Threshold: 25 days (not 30, to handle calendar variation).

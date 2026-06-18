@@ -10,8 +10,8 @@ triggers:
   - "any replies"
   - "openmail"
   - "outreach email"
-  - "has anyone replied"
-  - "send an email"
+  - "有沒有人回信"
+  - "寄信"
   - "nurturing email"
   - "inbox monitor"
 version: "1.0"
@@ -35,7 +35,7 @@ author: {{COMPANY_NAME}}/Leo
 import requests, json, uuid
 
 def load_om_token():
-    with open("/home/hunter_lin/.hermes/profiles/leo/.env") as f:
+    with open("~/.hermes/profiles/leo/.env") as f:
         for line in f:
             line = line.strip()
             if "OPENMAIL_API_KEY" in line and "=" in line:
@@ -175,6 +175,15 @@ After every successful send, always:
 4. Write Hindsight memory to `{{ORG_PREFIX}}-pipeline`
 
 ---
+
+## Fallback Behavior
+
+- **If `https://api.openmail.sh` is unreachable**: do not silently skip; surface the error: "OpenMail is unavailable — [send/inbox check] could not complete. Retrying next scheduled run (or retry manually)." For sends: leave OutreachMessage status as SCHEDULED so the next cron run can retry. Do not mark as SENT.
+- **If a send returns a non-2xx status**: do NOT mark the OutreachMessage as SENT; log the HTTP status and response body to Backend Report; do not retry immediately (may be a duplicate or rate limit); leave for human review.
+- **If `Idempotency-Key` is rejected (duplicate key within 24h)**: a prior send attempt may have succeeded — check CRM for an existing Engagement or OutreachMessage with `status: SENT` for this recipient before retrying with a new key. If found: the send succeeded; update CRM status accordingly.
+- **If the inbox poll returns 0 unread threads but replies are expected**: `is_read=false` may have returned false negatives (threads read by prior API call). Fall back to listing all threads with `limit=50` and filtering by `direction: inbound` + absence of existing CRM Engagement.
+- **If OPENMAIL_API_KEY is missing from `.env`**: surface immediately: "OPENMAIL_API_KEY not found — email operations are blocked. Check `.env` configuration."
+- **If rate limit is hit** (10 sends/min, 200 sends/day): pause sends; log count to Backend Report; resume next run or next day. Do not drop the queue — pending SCHEDULED messages will be retried.
 
 ## Pitfalls
 

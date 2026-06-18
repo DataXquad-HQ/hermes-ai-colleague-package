@@ -11,9 +11,9 @@ triggers:
   - "help me with this task"
   - "advice on"
   - "how do I handle"
-  - "how do I do this task"
-  - "help me think through this"
-  - "how do I follow up on this"
+  - "這個 task 怎麼做"
+  - "幫我想一下這個"
+  - "這個怎麼跟進"
 version: "1.0"
 author: {{COMPANY_NAME}}/Leo
 ---
@@ -61,7 +61,7 @@ Extract from the request:
 - **Company / opportunity** — which Opportunity or Partnership
 - **Deadline** — how urgent is this
 
-If unclear, ask: "Which task for which opportunity?"
+If unclear, ask: 「是哪個 opportunity 的哪個 task？」
 
 ### Step 2 — Pull All Available Context
 
@@ -171,6 +171,27 @@ Good advice = "They stalled because the CFO wasn't looped in. Lead with the ROI 
 | Sending any external communication | 🚫 Requires confirmation before send |
 
 ---
+
+## Quality Bar
+
+Before delivering advice:
+- Every specific recommendation is traceable to a concrete piece of context retrieved from CRM, Hindsight, or GBrain — not generated from general sales knowledge alone?
+- Context used to support a recommendation is labelled by source: "CRM shows…", "Hindsight recalled…", "Based on last logged interaction…" — not presented as confirmed current fact without attribution?
+- Advice is specific to this opportunity at this moment — not generic follow-up advice that could apply to any deal?
+- "Watch for" signals are drawn from known patterns in this opportunity's history (e.g. prior objections, stakeholder sensitivities) — not invented?
+- Fallback move (if awkward / no response) is a concrete action — not "try again later"?
+- If context is too thin to give confident advice, this is stated explicitly — "Context in Hindsight is limited for this opportunity. Advice is based on general stage patterns, not deep deal history."?
+
+If any check fails, revise or explicitly label the limitation before delivering.
+
+## Fallback Behavior
+
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` is unreachable**: advise based on CRM + GBrain only; clearly label: "Advice based on CRM data only — Hindsight unavailable. Deep interaction history not accessible."
+- **If CRM is unreachable**: advise based on Hindsight + GBrain only; label: "CRM unavailable — current opportunity stage and tasks not confirmed."
+- **If GBrain returns no company/contact context**: proceed with CRM + Hindsight; note "No GBrain relationship context found for [Company]."
+- **If all three memory sources are unavailable**: state this directly — "All memory sources are currently unavailable. Unable to provide context-specific advice. Please try again or share the relevant context directly."
+- **If the Task refers to an opportunity Leo has no prior context on**: state this — "No prior interaction history found for this opportunity. Advice will be based on stage-appropriate best practices, not deal-specific knowledge. Consider logging prior interactions to improve future advice." Do not fabricate deal history.
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` returns fewer than 2 results for this opportunity AND CRM has no prior Notes or Engagements**: recommend the Sales Rep run `log-engagement` first — "Context for this opportunity is too thin to give meaningful advice. Please log past interactions with `log-engagement` first, then ask again."
 
 ## Pitfalls
 

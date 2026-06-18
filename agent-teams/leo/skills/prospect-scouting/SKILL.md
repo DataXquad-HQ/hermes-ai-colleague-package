@@ -8,14 +8,14 @@ description: >
   needs to triage a list of potential contacts.
 triggers:
   - "prospect scouting"
-  - "who is worth visiting"
-  - "help me filter"
-  - "event list"
-  - "exhibitor list"
+  - "誰值得拜訪"
+  - "幫我篩選"
+  - "活動名單"
+  - "參展名單"
   - "attendee list"
   - "cold list"
-  - "who is most worth it"
-  - "which companies are worth it"
+  - "誰最值得"
+  - "哪些公司值得"
   - "scouting"
   - "prioritise list"
   - "prioritize list"
@@ -59,8 +59,8 @@ Before analysing anyone, check what's available:
 
 ```python
 # ICP and strategy (graceful degrade if missing)
-mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-icp")
-mcp_gbrain_get_page(slug="wiki/{{ORG_PREFIX}}-sales-strategy")
+mcp_gbrain_get_page(slug="wiki/dx-icp")
+mcp_gbrain_get_page(slug="wiki/dx-sales-strategy")
 
 # Relevant product wikis (load only the ones relevant to the focus area)
 mcp_gbrain_get_page(slug="wiki/products/[business-line]")
@@ -101,33 +101,33 @@ Score each company/person on:
 [Date] | [Focus area if specified]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔴 **Priority contacts (must-see)**
+🔴 **優先接觸（必見）**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. **[Company Name]** — [Key Person / Role if known]
-   Product fit: [business line] — [why they fit]
-   Relationship status: [existing contact / warm intro / cold]
-   Suggested angle: [specific angle or opening]
-   Trigger: [any timing signal — news, expansion, known pain]
+   產品契合：[business line] — [why they fit]
+   關係現況：[existing contact / warm intro / cold]
+   建議切入：[specific angle or opening]
+   觸發點：[any timing signal — news, expansion, known pain]
 
 2. **[Company Name]** ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🟡 **Worth a chat (time permitting)**
+🟡 **值得聊聊（時間允許）**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 3. **[Company Name]** — [brief reason]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚪ **Can skip**
+⚪ **可略過**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - [Company] — [one-line reason: wrong industry / too small / no fit]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 **Summary**
-Total assessed: [N] | Must-see: [N] | Worth a chat: [N] | Skip: [N]
+Total assessed: [N] | 必見: [N] | 值得聊: [N] | 略過: [N]
 
-[If ICP missing]: ⚠️ No ICP document found — inferred from existing opportunity history. Recommend creating `wiki/{{ORG_PREFIX}}-icp` to improve accuracy.
+[If ICP missing]: ⚠️ 無 ICP 文件，以現有 opportunity 歷史推斷。建議建立 `wiki/dx-icp` 以提升準確度。
 ```
 
 ---
@@ -138,12 +138,14 @@ When ICP document is unavailable, use these defaults based on known DX patterns:
 
 | Business Line | Strong fit signals |
 |---|---|
-| **BusyCow** | Field workforce, construction, logistics, facilities management |
-| **GeoKernel** | GIS, spatial data, mapping, smart city, infrastructure planning |
-| **AquaOptima** | Water utilities, wastewater, irrigation, water treatment plants |
-| **Distify** | Distribution, FMCG, supply chain, route optimisation |
-| **TRACI** | Transport, fleet, traffic management |
-| **{{COMPANY_NAME}}** | Enterprise data, analytics, digital transformation |
+| `{{BL_1}}` | [Industry fit, use case, key qualifiers] |
+| `{{BL_2}}` | [Industry fit, use case, key qualifiers] |
+| `{{BL_3}}` | [Industry fit, use case, key qualifiers] |
+
+> Fill in this table with your company's business lines and their ICP signals.
+> Update as you learn from real opportunities.
+
+Geography priority: [Your primary target geographies].
 
 Geography priority (unless stated otherwise): Taiwan, Hong Kong, Malaysia, Southeast Asia.
 
@@ -174,11 +176,33 @@ It is a read-only analysis tool. Writing happens in the downstream skill.
 
 ---
 
+## Quality Bar
+
+Before delivering the prioritised shortlist:
+- Every "必見" (must-see) ranking has at least one explicit reason — ICP fit signal, product use case, or relationship warmth — not just a general positive impression?
+- "建議切入" (suggested angle) for each 必見 company is specific and actionable — not "introduce yourself and explain {{COMPANY_NAME}}"?
+- Relationship warmth tier (Hot/Warm/Tepid/Cold) is based on a confirmed CRM or GBrain record, or explicitly stated as "no prior record found"?
+- Timing signals are sourced and recent (found via web search / Hindsight) — not inferred from company size or industry alone?
+- 必見 list is 3–5 companies max — if more than 5 are flagged 必見, the ranking has not been done properly?
+- Any company ranked 必見 despite Cold warmth tier is explicitly noted: "Cold contact — no prior relationship. Justify with: [strong ICP fit / specific trigger]."?
+- If ICP document was missing, every fit assessment is labelled "⚠️ Estimated from opportunity history"?
+
+If any check fails, revise the shortlist before delivering.
+
+## Fallback Behavior
+
+- **If GBrain is unreachable**: skip company page lookups; note "GBrain unavailable — relationship history not checked" in the output; proceed with CRM + Hindsight data only. Warmth tier defaults to "Cold" for any company without CRM confirmation.
+- **If Hindsight is unreachable**: skip `{{ORG_PREFIX}}-pipeline` recall; note the gap; proceed with CRM + web research.
+- **If CRM is unreachable**: skip CRM lookup for existing contacts; note "CRM unavailable — cannot confirm existing relationships"; proceed with GBrain + Hindsight + web research. Flag every company as potentially already in CRM — the Sales Rep should verify before engaging.
+- **If GBrain ICP pages are missing**: proceed; label all fit assessments "⚠️ No ICP document — estimated from opportunity history"; recommend building the ICP page after the event.
+- **If web search returns nothing on a company**: note "No recent web results found" in that company's entry; use whatever is available in CRM/GBrain; do not invent news or signals.
+- This skill is read-only — if any write system fails, it has no impact on output. Deliver the analysis based on what was retrievable and flag gaps.
+
 ## Pitfalls
 
 - **Don't skip knowledge context loading** — even if ICP is missing, check anyway and note it in the output. The ⚠️ flag reminds the Sales Rep to build that wiki page.
 - **Company name matching is fuzzy** — CRM `like` search may miss variations. Try multiple spellings. Use GBrain fuzzy=True.
 - **Warm relationships always beat cold fit** — a tepid-fit company with an existing warm contact is usually worth more than a perfect-fit cold company.
-- **Don't over-rank** — the must-see list should be 3–5 companies max. If everything is high priority, nothing is.
+- **Don't over-rank** — 必見 list should be 3–5 companies max. If everything is high priority, nothing is.
 - **Ask for focus area upfront if list is large (20+)** — without a focus, assessment takes longer and output is less actionable.
 - **This skill is read-only** — never write to CRM or Hindsight during scouting. Writing happens after the Sales Rep decides to engage.

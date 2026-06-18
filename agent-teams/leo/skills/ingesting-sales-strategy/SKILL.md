@@ -1,30 +1,28 @@
 ---
 name: ingesting-sales-strategy
 description: >
-  One-time setup skill (re-run on document updates). Reads BL knowledge
-  directly from GBrain vault files and stores structured summaries into
-  Hindsight for fast runtime recall. Leo reads from GBrain + Hindsight
-  during Health Check and Strategy Check — never reads the source files
-  at runtime.
+  One-time setup skill (re-run on document updates). Reads the company's
+  sales-strategy.md from GitHub Wiki, extracts structured knowledge, and
+  stores it into GBrain (concept pages) and Hindsight {{ORG_PREFIX}}-global (semantic
+  memories). Leo reads from GBrain + Hindsight during Health Check and
+  Strategy Check — never reads the source document at runtime.
 triggers:
   - "ingest sales strategy"
   - "update sales strategy"
   - "load strategy document"
   - "strategy document updated"
-  - "read sales strategy"
-  - "update strategy document"
+  - "讀取 sales strategy"
+  - "更新策略文件"
 ---
 
 # Ingest Sales Strategy Skill
 
-> **Note:** GBrain vault is the source of truth. This skill distils vault content into Hindsight for fast runtime recall. Do not fetch from GitHub.
-
 ## Purpose
 
-Read BL knowledge directly from GBrain vault files, extract all structured
-knowledge, and write it into the two memory layers Leo uses at runtime.
-After ingest, Leo never reads the source files again until they are updated
-and ingest is re-run.
+Read the company's `sales-strategy.md` from GitHub Wiki once, extract all
+structured knowledge, and write it into the two memory layers Leo uses at
+runtime. After ingest, Leo never reads the source document again until the
+document is updated and ingest is re-run.
 
 ---
 
@@ -53,23 +51,40 @@ and ingest is re-run.
 
 | Input | How provided |
 |---|---|
-| Document URL | Human provides in the trigger message (GitHub Wiki raw URL) |
+| Document URL or local path | Human provides in the trigger message |
 
-Example trigger:
+Example triggers:
 ```
-"ingest sales strategy for [business-line]"
+"ingest sales strategy from https://raw.githubusercontent.com/[org]/[repo]/main/wiki/sales-strategy.md"
+"ingest sales strategy"   ← uses known local path (preferred)
 ```
+
+**Known location:** `sales-strategy.md` lives at:
+```
+/mnt/disks/data/{{ORG_PREFIX}}-internal-wiki/context/sales-strategy.md
+```
+This repo is private — raw GitHub URLs return 404 without auth. Always read from the local clone.
 
 ---
 
 ## Step 1 — Fetch the document
 
+**Preferred — read from local clone (repo is private, GitHub URLs won't work):**
 ```python
+from hermes_tools import terminal
+# Pull latest first
+terminal("cd /mnt/disks/data/{{ORG_PREFIX}}-internal-wiki && git pull origin main")
+
 from hermes_tools import read_file
-icp = read_file("/path/to/dx-gbrain/internal/business-lines/[bl]/icp.md")
-strategy = read_file("/path/to/dx-gbrain/internal/business-lines/[bl]/strategy.md")
-gtm = read_file("/path/to/dx-gbrain/internal/business-lines/[bl]/gtm.md")
-product = read_file("/path/to/dx-gbrain/internal/business-lines/[bl]/product.md")
+result = read_file("/mnt/disks/data/{{ORG_PREFIX}}-internal-wiki/context/sales-strategy.md")
+content = result["content"]
+```
+
+**Fallback — if URL provided and repo is public:**
+```python
+from hermes_tools import web_extract
+result = web_extract(urls=["[URL provided by human]"])
+content = result["results"][0]["content"]
 ```
 
 ---
@@ -113,7 +128,7 @@ For each section, extract the key fields as structured data.
 
 Create or overwrite one page per concept. Use `mcp_gbrain_put_page`.
 
-### Page: `internal/business-lines/[bl]/strategy-summary`
+### Page: `concepts/sales-goals`
 ```markdown
 ---
 type: concept
@@ -133,7 +148,7 @@ updated: [today's date]
 [table or list from document, if provided]
 ```
 
-### Page: `internal/business-lines/[bl]/icp-summary`
+### Page: `concepts/icp`
 ```markdown
 ---
 type: concept
@@ -156,7 +171,7 @@ updated: [today's date]
 [icp_red_flags as list]
 ```
 
-### Page: `internal/business-lines/[bl]/sales-strategy-summary`
+### Page: `concepts/sales-strategy`
 ```markdown
 ---
 type: concept
@@ -181,7 +196,7 @@ updated: [today's date]
 [list]
 ```
 
-### Page: `internal/business-lines/[bl]/partnership-goals-summary`
+### Page: `concepts/partnership-goals`
 ```markdown
 ---
 type: concept
@@ -198,7 +213,7 @@ updated: [today's date]
 **Revenue through partners (target):** [value]
 ```
 
-### Page: `internal/business-lines/[bl]/partnership-strategy-summary`
+### Page: `concepts/partnership-strategy`
 ```markdown
 ---
 type: concept
@@ -218,7 +233,7 @@ updated: [today's date]
 [list]
 ```
 
-### Page: `internal/business-lines/[bl]/pipeline-benchmarks-summary`
+### Page: `concepts/pipeline-benchmarks`
 ```markdown
 ---
 type: concept
@@ -294,12 +309,12 @@ Report back:
 ✅ Sales Strategy ingested — [date]
 
 **GBrain pages written:**
-- internal/business-lines/[bl]/strategy-summary
-- internal/business-lines/[bl]/icp-summary
-- internal/business-lines/[bl]/sales-strategy-summary
-- internal/business-lines/[bl]/partnership-goals-summary
-- internal/business-lines/[bl]/partnership-strategy-summary
-- internal/business-lines/[bl]/pipeline-benchmarks-summary
+- concepts/sales-goals
+- concepts/icp
+- concepts/sales-strategy
+- concepts/partnership-goals
+- concepts/partnership-strategy
+- concepts/pipeline-benchmarks
 
 **Hindsight {{ORG_PREFIX}}-global:** 6 memory items stored
 
@@ -321,8 +336,31 @@ Ask the document owner to fill them in and re-run ingest.
 
 ---
 
+## Quality Bar
+
+Before writing to GBrain and Hindsight:
+- All seven sections present in the document and contain real content (not placeholder `[e.g. ...]` text)?
+- `revenue_target`, `new_customer_target`, and `stage_conversion_rates` extracted as explicit numbers or ranges — not vague phrases like "grow significantly"?
+- Hindsight memories written in natural-language recall form (what Leo would search for at runtime) — not raw field dumps?
+- GBrain concept pages contain the extracted content, not re-statements of what the document template says?
+- Any section that was blank or placeholder-only is noted in the confirmation report as "⚠️ Missing: [section name] — this section is required for [Health Check / Strategy Check] to function correctly"?
+- If converting a benchmark from a percentage to a decimal (or vice versa), the transformation is explicitly shown in the confirmation output?
+
+If any check fails (especially if core sections are blank), abort the ingest and notify the human — do not store placeholder text as facts.
+
+## Fallback Behavior
+
+- **If the local repo clone is missing or stale** (`/mnt/disks/data/{{ORG_PREFIX}}-internal-wiki/` does not exist or `git pull` fails): abort; inform the human "Local wiki clone unavailable — cannot ingest. Please ensure the repo is cloned at `/mnt/disks/data/{{ORG_PREFIX}}-internal-wiki/`."
+- **If the document is entirely blank or all-placeholder**: abort immediately; notify: "sales-strategy.md contains only template placeholders. Fill in the document before ingesting."
+- **If GBrain is unreachable**: write to Hindsight only; note "GBrain unavailable — concept pages not written. Re-run ingestion when GBrain is back to complete the write."
+- **If Hindsight `{{ORG_PREFIX}}-global` is unreachable**: write to GBrain only; note "Hindsight unavailable — semantic memories not stored. Re-run ingestion when Hindsight is back."
+- **If individual sections are missing** (e.g. Partnership Goals blank): write all available sections; flag each missing section prominently in the confirmation report with the impact: "Pipeline benchmarks missing — Health Check will not be able to compare against targets."
+- **If re-running on an already-ingested strategy**: confirm overwrite is intended; note what changed from prior version if possible (dates on GBrain pages show last updated).
+
 ## Pitfalls
 
+- **GitHub repo is private — raw URLs return 404.** Always read from the local clone at `/mnt/disks/data/{{ORG_PREFIX}}-internal-wiki/`. Run `git pull` before reading to get the latest version.
+- **Document may still be a template (all placeholders).** If every section contains `[e.g. ...]` values, the document hasn't been filled in yet. Abort ingest and notify the human — do not store placeholder text as facts.
 - **Re-run = overwrite** — `mcp_gbrain_put_page` overwrites existing pages. This is correct behaviour on re-ingest.
 - **If benchmarks are blank** — store stall threshold as 30 days (default) and note that conversion rates will be calculated from CRM data after 6+ months.
 - **{{ORG_PREFIX}}-global is for company-wide decisions only** — do not store opportunity-specific or person-specific data here.

@@ -378,6 +378,16 @@ mutation UpdateField($input: UpdateOneFieldMetadataInput!) {
 - `scripts/add_person_field.py` — working template for adding a custom field to Person via metadata API; edit constants and run
 - `scripts/find_object_fields.py` — paginate through all custom fields on any object; handles the 10-item metadata API cap
 
+## Fallback Behavior
+
+- **If CRM (`http://localhost:3001`) is unreachable**: do not silently fail; surface the error to the calling skill or the Sales Rep immediately: "CRM is unreachable — [operation] could not complete. Please retry." Do not fabricate CRM data or present stale cached state as current.
+- **If a GraphQL mutation returns `BAD_USER_INPUT`**: check field names against `references/live-schema-snapshot.md` before retrying — common causes: wrong body field (`body` vs `bodyV2`), wrong relation field (`opportunityId` vs `targetOpportunityId`), or invalid enum value.
+- **If an enum value is rejected**: do NOT guess alternatives; introspect with `{ __type(name: \"EnumName\") { enumValues { name } } }` first, or check `references/live-schema-snapshot.md`.
+- **If a mutation returns null for the created/updated object**: treat as a failed write; do not proceed as if the record exists; log the failure and retry or escalate.
+- **If `filter: { name: { like: \"%..%\" } }` returns empty on opportunities**: list all with `opportunities(first: 100)` and filter in Python — the `like` filter on opportunities is unreliable (confirmed pitfall).
+- **If TWENTY_API_KEY is missing from `.env`**: the token loader returns None; the API call fails with 401. Surface this directly: "TWENTY_API_KEY not found in Leo's .env — CRM auth is broken. Check `.env` configuration."
+- Do not present any CRM-sourced field (stage, healthCheck, currentStatusSummary) as current truth if the CRM read failed — label it as "last known state" or ask the Sales Rep to confirm.
+
 ## Pitfalls
 
 - The `/api` REST endpoint returns 404 — always use `/graphql` for data
@@ -398,9 +408,17 @@ mutation UpdateField($input: UpdateOneFieldMetadataInput!) {
 - **`UpdateOneFieldMetadataInput` does NOT have `objectMetadataId`** — only `id` + `update` are valid
 - **OutreachMessage body field is `body`, NOT `bodyV2`** — the custom object uses `body: { markdown: "..." }` (RichText). `bodyV2` does not exist on this object. Confirmed via introspection 2026-06-15.
 - **CRM links for humans use external URL** — `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`, never `localhost:3001`
+- **`company` has no `city` field** — the field is `address` (not `city`). Passing `city` throws "Object company doesn't have any city field". Use `address` or omit location entirely.
+- **`country` enum on Person** — valid values are: `TAIWAN`, `HONG_KONG`, `CHINA`, `MALAYSIA`, `JAPAN`, `SINGAPORE`, `OTHER`. `HONG_KONG_SAR_CHINA` is NOT valid — use `HONG_KONG`.
 - Best pattern: write full script to `/mnt/disks/data/hermes/profiles/leo/workspace/`, run with `terminal python3 /path/script.py`
-- **`opportunity(id: "...")` throws "Argument not allowed: id"** — single-record lookup does NOT accept `id` as a direct argument. Use `opportunities(filter: { id: { eq: "UUID" } }) { edges { node { ... } } }` and take `edges[0]`
+- **`opportunity(id: "...")` throws "Argument not allowed: id"** — single-record lookup does NOT accept `id` as a direct argument. Use `opportunities(filter: { id: { eq: "UUID" } })` and take `edges[0]`
 - **`filter: { name: { like: "%partial%" } }` on opportunities is unreliable** — often returns empty even when records exist. Safer: list all with `opportunities(first: 100)` and filter by name in Python. Same applies to other objects.
+- **`company` has no `city` field** — confirmed 2026-06-17. Company's available writable fields are: `name`, `domainName`, `address`. Do not attempt `city`, `location`, or `country` — they will throw "Object company doesn't have any field" errors.
+- **`partnership(filter: ...)` returns `edges: null`** (not `edges: []`) when using a single-record filter alias (e.g. `partnership { edges { node {...} } }`). This is a GQL alias issue — use `partnerships` (plural) with a filter instead: `partnerships(filter: { id: { eq: "UUID" } }) { edges { node {...} } }`. Always use the plural root for filtered single-record lookups.
+- **Company name dedup via `like` can surface stub records** — short/partial names like "SkyDyn" may exist from earlier captures. Always check the full name and domain before creating a new company; update the existing stub rather than creating a duplicate.
+- **`PersonCountryEnum` uses `HONG_KONG` not `HONG_KONG_SAR_CHINA`** — full valid set: `TAIWAN | HONG_KONG | CHINA | MALAYSIA | JAPAN | SINGAPORE | OTHER`. Never guess country enum values — check `references/live-schema-snapshot.md` first.
+- **Empty-string UUID crash** — if a lookup returns no results and you pass `id if id else ""` as a `companyId`, the API throws "Invalid UUID value ''". Always guard: confirm the ID is non-None BEFORE using it in a mutation. Pattern: create the dependency (company, person) in a prior step, verify its ID was returned, then use it downstream.
+- **`deletePerson(id: "UUID")` works for deduplication** — use to remove stub/duplicate person records. Soft-delete in Twenty (recoverable). Run an audit query first to confirm which record is the stub vs the enriched one before deleting.
 
 ## Metadata API Pitfalls (field/schema mutations)
 

@@ -9,8 +9,8 @@ triggers:
   - "check inbox"
   - "any replies?"
   - "inbox monitor"
-  - "has anyone replied"
-  - "did we get a reply"
+  - "有沒有人回信"
+  - "收到回信了嗎"
   - "monitor email replies"
   - "C4 inbox"
 ---
@@ -19,7 +19,7 @@ triggers:
 
 ## When to Use
 
-Use when checking Leo's OpenMail inbox for inbound replies to outreach emails. Runs automatically via daily cron, or trigger manually with 'check inbox' / 'has anyone replied'. Do not use for sending emails — that is handled by nurturing-leads.
+Use when checking Leo's OpenMail inbox for inbound replies to outreach emails. Runs automatically via daily cron, or trigger manually with 'check inbox' / '有沒有人回信'. Do not use for sending emails — that is handled by nurturing-leads.
 
 ## Purpose
 
@@ -32,8 +32,8 @@ A reply is a signal — it means the Lead is engaging. Human decides how to repl
 
 ## When to Use
 
-- **Cron (Cron C):** runs automatically once daily at 02:00 UTC
-- **Human trigger:** "check inbox", "has anyone replied", "any replies?" — manual on-demand check
+- **Cron:** runs automatically once daily at 02:00 UTC
+- **Human trigger:** "check inbox", "有沒有人回信", "any replies?" — manual on-demand check
 - **Do not use** for sending emails — that is `nurturing-leads` Flow B
 
 ---
@@ -42,7 +42,7 @@ A reply is a signal — it means the Lead is engaging. Human decides how to repl
 
 | Item | Value |
 |---|---|
-| OpenMail token | `{{OPENMAIL_TOKEN}}` |
+| OpenMail token | `{{OPENMAIL_API_KEY}}` |
 | Leo inbox ID | `{{OPENMAIL_INBOX_ID}}` |
 | Leo address | `{{AGENT_EMAIL}}` |
 | CRM base URL (API) | `http://localhost:3001/graphql` |
@@ -57,7 +57,7 @@ A reply is a signal — it means the Lead is engaging. Human decides how to repl
 ```python
 import requests
 
-token = "{{OPENMAIL_TOKEN}}"
+token = "{{OPENMAIL_API_KEY}}"
 inbox_id = "{{OPENMAIL_INBOX_ID}}"
 headers = {"Authorization": f"Bearer {token}"}
 
@@ -88,19 +88,21 @@ if latest["direction"] != "inbound":
 
 ### Step 1b — De-duplicate: skip already-processed threads
 
-Before processing any thread, check CRM for an existing Engagement that references this thread_id:
+Before processing any thread, check CRM for an existing Engagement that references this thread_id.
+
+**Important:** `engagementNote` is a `RichTextFilterInput` — it does NOT support `like`/`contains` string filters. Use the `outcome` field instead (which is a `StringFilter` and also contains the thread reply content), or search by `name` which contains the company and date:
 
 ```graphql
 {
   engagements(filter: {
-    engagementNote: { contains: "[thread_id]" }
+    outcome: { like: "%[first 8 chars of thread_id]%" }
   }) {
     edges { node { id } }
   }
 }
 ```
 
-If a match exists → skip this thread entirely (already logged). This prevents duplicate Engagements when threads were read and processed manually (e.g. during debugging or first-run bootstrapping).
+Alternatively, store the thread_id in the `outcome` field explicitly (e.g. prefix with `Thread:`) so it's reliably searchable. If a match exists → skip this thread entirely (already logged). This prevents duplicate Engagements when threads were read and processed manually (e.g. during debugging or first-run bootstrapping).
 
 ### Step 2 — Match sender to CRM Person
 
@@ -208,12 +210,12 @@ Read the clean reply and classify the intent:
 
 | Intent | Examples | Task to create |
 |---|---|---|
-| **Wants human contact** | "Can I meet a real person?" "Can we chat with one of your team?" | "Respond to [Person] — wants to speak with a human" |
-| **Has a question** | "Do you do X?" "How does pricing work?" | "Reply to [Person]'s question: [question summary]" |
-| **Wants a meeting** | "Can we schedule a call?" "Do you have time to chat?" | "Schedule a call with [Person] — [Company]" |
-| **Positive / interested** | "Very interested" "Please tell me more" | "Follow up with [Person] — expressed interest" |
-| **Neutral / acknowledge** | "Got it" "Thanks" | "Follow up with [Person] — acknowledged outreach" |
-| **Negative / not interested** | "Not needed" "Not considering it for now" | No task — flag for human to consider OPT_OUT |
+| **Wants human contact** | 「可以認識真人嗎」「能跟你們的人聊聊嗎」 | "Respond to [Person] — wants to speak with a human" |
+| **Has a question** | 「你們有做X嗎」「價格怎麼算」 | "Reply to [Person]'s question: [question summary]" |
+| **Wants a meeting** | 「可以安排個call嗎」「有空聊聊嗎」 | "Schedule a call with [Person] — [Company]" |
+| **Positive / interested** | 「很有興趣」「請多介紹」 | "Follow up with [Person] — expressed interest" |
+| **Neutral / acknowledge** | 「收到了」「謝謝」 | "Follow up with [Person] — acknowledged outreach" |
+| **Negative / not interested** | 「不需要」「暫時不考慮」 | No task — flag for human to consider OPT_OUT |
 
 Create a CRM Task for all intents **except negative**:
 
@@ -221,7 +223,7 @@ Create a CRM Task for all intents **except negative**:
 mutation {
   createTask(data: {
     title: "[Task title based on intent]"
-    body: { markdown: "**Reply received from:** [Person], [Company]\n\n**Their message:**\n[reply_clean]\n\n**Suggested action:** [what Leo recommends based on intent]\n\nCRM: {{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]" }
+    bodyV2: { markdown: "**Reply received from:** [Person], [Company]\n\n**Their message:**\n[reply_clean]\n\n**Suggested action:** [what Leo recommends based on intent]\n\nCRM: {{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]" }
     status: TODO
     dueAt: "[tomorrow ISO date, 09:00 local = 01:00 UTC]"
     assigneeId: "[Sales Rep user ID from CRM]"
@@ -246,43 +248,43 @@ Pick the human Sales Rep (not Leo/bot accounts).
 Post to `[Sales] Nurturing Outreach Review` (`{{OUTREACH_REVIEW_CHANNEL_ID}}`):
 Single reply:
 ```
-📩 Reply received! — [Date]
+📩 收到回信！— [Date]
 
 **[Person Name]** — [Company]
-Subject: Re: [subject]
+主旨：Re: [subject]
 
 > [reply_clean — first 300 chars, truncate with "…" if longer]
 
-📋 Task created: [task title]
-CRM contact: {{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]
-CRM engagement: {{CRM_EXTERNAL_URL}}/objects/engagements/[ENGAGEMENT_UUID]
+📋 已建立 Task：[task title]
+CRM 聯絡人：{{CRM_EXTERNAL_URL}}/objects/people/[PERSON_UUID]
+CRM 互動記錄：{{CRM_EXTERNAL_URL}}/objects/engagements/[ENGAGEMENT_UUID]
 ```
 
 Negative intent (no task created):
 ```
-📩 Reply received — [Date]
+📩 收到回信 — [Date]
 
 **[Person Name]** — [Company]
-Subject: Re: [subject]
+主旨：Re: [subject]
 
 > [reply_clean]
 
-⚠️ Recipient indicated no interest. Mark as OPT_OUT? Please confirm manually.
+⚠️ 對方表示不感興趣。是否要標記為 OPT_OUT？請人工確認。
 ```
 
 Multiple replies in one run:
 ```
-📩 [N] new reply(ies) — [Date]
+📩 [N] 封新回信 — [Date]
 
 1. **[Person]** — [Company]
    > [reply preview 80 chars…]
-   📋 Task: [task title]
-   CRM: {{CRM_EXTERNAL_URL}}/objects/people/[UUID]
+   📋 Task：[task title]
+   CRM：{{CRM_EXTERNAL_URL}}/objects/people/[UUID]
 
 2. **[Person]** — [Company]
    > [reply preview 80 chars…]
-   📋 Task: [task title]
-   CRM: {{CRM_EXTERNAL_URL}}/objects/people/[UUID]
+   📋 Task：[task title]
+   CRM：{{CRM_EXTERNAL_URL}}/objects/people/[UUID]
 ```
 
 ### Step 9 — Mark thread as read
@@ -348,6 +350,28 @@ Stay silent when there's nothing to say.
 
 - `references/openmail-api-notes.md` — confirmed OpenMail API behaviours: mark-read endpoint, inbound filtering, reply body cleanup. Load when debugging inbox issues.
 
+## Quality Bar
+
+Before logging an Engagement or creating a Task:
+- Reply direction confirmed as `inbound` on the latest message — not an outbound thread being reprocessed?
+- Quoted text stripped — Engagement `outcome` field contains only the new reply text, not the full email chain?
+- Sender email matched to a CRM Person — not assumed from name or subject line alone?
+- Intent classification based on actual reply content — not inferred from subject line only?
+- Thread de-duplication check run — no existing Engagement with this thread_id already logged?
+- CRM Task body includes the verbatim reply excerpt (first 200 chars) so the sales team has full context without opening CRM?
+- CRM links in Lark notification use `{{CRM_EXTERNAL_URL}}` — not `localhost`?
+
+If any check fails, do not mark the thread as read — leave it unread for retry.
+
+## Fallback Behavior
+
+- **If OpenMail is unreachable**: post to Backend Report: "OpenMail unavailable — inbox could not be polled. Retrying next scheduled run." Do not silently skip.
+- **If CRM is unreachable**: inbox can be read, but do not create Engagements or Tasks; log reply to Backend Report only; do not mark thread as read (leaves it for retry when CRM is back).
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` is unreachable**: skip the Hindsight write; log the gap in Backend Report; proceed with CRM Engagement creation — Hindsight is supplementary, not blocking.
+- **If sender email does not match any CRM Person**: do NOT auto-create a person; flag in Backend Report as "Unknown sender: [email] — manual action needed"; post the reply preview to Backend Report so a human can act.
+- **If Lark `[Sales] Nurturing Outreach Review` message fails**: log the failure in Backend Report; the Engagement and Task are already created — the ops log is the fallback record.
+- **If intent classification is ambiguous** (reply is too short or language unclear): default to "Neutral / acknowledge" intent — create a follow-up task rather than doing nothing.
+
 ## Pitfalls
 
 - **`is_read` not `isRead`** — OpenMail PATCH body uses snake_case: `{"is_read": true}`. camelCase returns 400. PUT returns 404 — only PATCH works.
@@ -360,4 +384,7 @@ Stay silent when there's nothing to say.
 - **TWENTY_API_KEY auth** — load from env: `[k for k in open('/path/.env').read().splitlines() if k.startswith('TWENTY_API_KEY')][0].split('=',1)[1]`
 - **API calls can inadvertently mark threads read** — calling `GET /v1/threads/{id}/messages` may cause the thread's `isRead` to flip on the server side. If a reply was processed manually (e.g. during debugging), check CRM for an existing Engagement before creating a duplicate. The cron should de-duplicate by checking: does an Engagement already exist with this thread_id in its note?
 - **`is_read=false` may return zero even when replies exist** — if threads were read by a prior API call or manual processing, poll all threads and filter by `direction: inbound` + absence of existing Engagement instead of relying solely on `is_read=false`.
-- **Escalation signal** — if reply content contains phrases like "speak with a real person", "human", flag in the Lark notification with `⚡ Recipient is requesting to speak with a real person` so the sales rep prioritises it.
+- **`engagementNote` is RichTextFilterInput — not searchable with `like`** — do NOT use `engagementNote: { like: "..." }` in dup-check queries; it will fail with a NoneType error. Use the `outcome` field (StringFilter) instead, which also records the reply content and is string-searchable.
+- **Task body field is `bodyV2`** — TaskCreateInput uses `bodyV2: { markdown: "..." }`, not `body`. Using `body` returns `BAD_USER_INPUT`.
+- **Lark auth via FEISHU_APP_ID/FEISHU_APP_SECRET** — get a tenant_access_token by POST to `https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal` with `{"app_id": ..., "app_secret": ...}`. There is no pre-issued bearer token for Lark.
+- **Escalation signal** — if reply content contains phrases like "speak with a real person", "真人", "human", flag in the Lark notification with `⚡ 對方要求與真人聯繫` so the sales rep prioritises it.

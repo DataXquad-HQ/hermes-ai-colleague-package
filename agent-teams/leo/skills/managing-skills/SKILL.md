@@ -13,9 +13,9 @@ triggers:
   - "delete skill"
   - "update skill"
   - "make this a shared skill"
-  - "add a new skill"
-  - "create a skill"
-  - "remove a skill"
+  - "新增 skill"
+  - "建立 skill"
+  - "刪除 skill"
   - "shared skill"
 version: "2.0"
 ---
@@ -24,13 +24,13 @@ version: "2.0"
 
 ## Step 0 — Before writing any skill
 
-**Load the skill-creator skill first:**
+**Load and read the Anthropic guide first:**
 ```
 skill_view(name='skill-creator')
 ```
 
-Follow those guidelines for structure, naming, description, Quality Bar, and Fallback Behavior.
-The quick rules below are a summary — skill-creator is authoritative.
+Follow those guidelines for structure, naming, description, and frontmatter.
+The quick rules below are a summary — the reference is authoritative.
 
 ---
 

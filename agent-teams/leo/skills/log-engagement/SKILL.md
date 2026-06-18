@@ -14,12 +14,12 @@ triggers:
   - "just got off a call"
   - "update opportunity"
   - "update partnership"
-  - "finished the meeting"
-  - "just got off the phone with them"
-  - "follow up"
+  - "開完會了"
+  - "剛跟他們通過電話"
+  - "跟進"
   - "log engagement"
   - "sent an email to"
-  - "sent an email to them"
+  - "發了信給"
 version: "2.0"
 author: {{COMPANY_NAME}}/Leo
 ---
@@ -76,7 +76,7 @@ POST /v1/default/banks/{{ORG_PREFIX}}-pipeline/memories/recall
 
 Also recall Hunter's current priorities if this is a sensitive or high-stakes opportunity:
 ```
-POST /v1/default/banks/{{ORG_PREFIX}}-human-sales-rep/memories/recall
+POST /v1/default/banks/{{ORG_PREFIX}}-human-[rep-name]/memories/recall
 {"query": "priorities and communication style", "top_k": 3}
 ```
 
@@ -99,14 +99,14 @@ From the raw input, extract:
 
 Present extracted summary to Sales Rep:
 
-> "Does this look right?
-> **Interaction Type:** [Meeting / Call / Email / Demo / …]
-> **Date:** [date]
-> **Outcome:** [outcome]
-> **Next Step:** [next action — owner + deadline]
-> **Additional Notes:** [narrative context]
+> 「這樣記對嗎？
+> **互動類型：** [Meeting / Call / Email / Demo / …]
+> **日期：** [date]
+> **結果：** [outcome]
+> **下一步：** [next action — owner + deadline]
+> **補充說明：** [narrative context]
 >
-> Anything to add or correct?"
+> 有什麼要補充或修正的？」
 
 **Do NOT write to CRM until confirmed (or Sales Rep explicitly skips).**
 
@@ -195,7 +195,7 @@ mutation CreateTask($data: TaskCreateInput!) {
 # variables:
 {
   "data": {
-    "title": "[Follow-Up] Company — specific action",
+    "title": "[跟進] Company — specific action",
     "status": "TODO",
     "dueAt": "2026-06-17T12:00:00Z",
     "bodyV2": {
@@ -273,6 +273,28 @@ Both layers are non-negotiable. Hindsight = fast recall next session. GBrain = p
 
 ---
 
+## Quality Bar
+
+Before writing to CRM (after Sales Rep confirms):
+- `currentStatusSummary` written in present tense with a concrete anchor (e.g. "Proposal sent 2026-06-14; waiting for CFO sign-off") — not a past-tense event log ("Had a call")?
+- `nextActionSummary` follows the format [Action] — [Owner] — [Deadline], all three fields present?
+- `healthCheck` value reflects a judgment from the new information (not carried over unchanged from the prior state without reasoning)?
+- Stage advancement suggestion based on a stated criterion from the stage logic table — not an intuition?
+- Intel labelled by type: Verified Fact (from call/email/document) vs Inferred Conclusion (Leo's interpretation) — not mixed in the same bullet?
+- No attendee names invented — if attendees are unknown, `clientAttendeesId` is set to the primary known contact and unknown attendees listed by role/first-name-only in `engagementNote`?
+- Both memory layers scheduled: Hindsight `{{ORG_PREFIX}}-pipeline` + GBrain timeline entry?
+
+If any check fails, fix before writing to CRM.
+
+## Fallback Behavior
+
+- **If CRM is unreachable**: do not write; present the confirmed summary to the Sales Rep as a text block they can manually enter later; offer to retry when CRM is back.
+- **If Hindsight `{{ORG_PREFIX}}-pipeline` is unreachable**: log the engagement in CRM regardless; note in the Engagement `engagementNote` that Hindsight write failed; the Sales Rep's context is preserved in CRM. Do not block the CRM write waiting for Hindsight.
+- **If GBrain is unreachable**: skip `add_timeline_entry` and `extract_facts`; note the gap in the session summary; the CRM Engagement is the primary record — GBrain is supplementary.
+- **If `mcp_gbrain_extract_facts` returns an embedding dimension error**: graceful fallback — the intel is already in the CRM Engagement and Hindsight; note the GBrain failure; do not retry in a loop.
+- **If the Opportunity/Partnership UUID is unknown** (Sales Rep gives company name only): query CRM for active records by company name; if multiple matches found, present them and ask Sales Rep to confirm — do not guess.
+- **If context from Hindsight is sparse** (fewer than 2 results): state this explicitly — "Limited prior context available in Hindsight for this opportunity" — and proceed based on what the Sales Rep has shared this session. Do not pad advice with fabricated history.
+
 ## Pitfalls
 
 - **Recall first.** Always recall `{{ORG_PREFIX}}-pipeline` before extracting. Don't ask the Sales Rep what Hindsight already knows.
@@ -297,4 +319,4 @@ Both layers are non-negotiable. Hindsight = fast recall next session. GBrain = p
 - `references/pipeline-design-decisions.md` — Design rationale
 - `references/hindsight-api-patterns.md` — Hindsight bank creation (PUT not POST), recall/retain patterns, bank design decisions
 - `references/openmail-api-patterns.md` — OpenMail send/receive API (temporarily here; move to email/outreach skill when C1 is built)
-- `references/vikings-stakeholder-map.md` — The Vikings org structure: known contacts, shareholder blocker, Rae/Julia attendance history
+- `references/[company-slug]-stakeholder-map.md` — Key stakeholder map template: known contacts, decision-makers, and influencers for a specific opportunity

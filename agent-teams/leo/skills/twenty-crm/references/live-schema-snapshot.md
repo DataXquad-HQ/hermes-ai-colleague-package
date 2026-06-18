@@ -1,11 +1,30 @@
 # Twenty CRM — Live Schema Snapshot
 *Verified: 2026-06-15 via GraphQL introspection against localhost:3001*
 *Updated: 2026-06-15 — added Person fields for C1 Lead Capture*
+*Updated: 2026-06-17 — added Company field list (confirmed writable fields only), Partnership enum values*
 
 ## GraphQL Endpoints (confirmed working)
 - `POST /graphql` — data CRUD ✅
 - `POST /metadata` — schema introspection ✅
 - `POST /api` — **404, does not exist** ❌
+
+## Company Fields (verified 2026-06-17)
+Only these fields are writable on Company:
+- `name` — company name
+- `domainName` — `{ primaryLinkUrl, primaryLinkLabel }`
+- `address` — structured address object
+
+**NOT available:** `city`, `country`, `location`, `employees` — these will throw "Object company doesn't have any field" errors if passed to `updateCompany`.
+
+## Partnership Enums (verified 2026-06-17)
+### PartnershipPartnerTypeEnum
+`RESELLER` | `INTEGRATOR` | `TECHNOLOGY` | `REFERRAL`
+
+### PartnershipStatusEnum
+`ACTIVE` | `NEEDS_FOLLOWUP` | `DORMANT` | `INACTIVE`
+
+### PartnershipStageEnum
+`PROSPECT` | `QUALIFYING` | `AGREEMENT` | `ACTIVE` | `INACTIVE`
 
 ## Object Counts (at time of snapshot)
 - People: 16

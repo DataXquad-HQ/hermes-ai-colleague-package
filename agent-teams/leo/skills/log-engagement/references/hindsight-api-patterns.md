@@ -71,8 +71,8 @@ unrelated team ops — recall signal degrades.
 |---|---|---|
 | `{{ORG_PREFIX}}-pipeline` | 0 (new) | Opportunity contextual memory — C4/C5 primary bank |
 | `{{ORG_PREFIX}}-global` | 54 | Company-level facts, portfolio, team structure |
-| `{{ORG_PREFIX}}-human-sales-rep` | 12 | Hunter's style and priorities |
-| `{{ORG_PREFIX}}-human-manager` | 16 | Kevin's style and priorities |
+| `{{ORG_PREFIX}}-human-[rep-name]` | 12 | Hunter's style and priorities |
+| `{{ORG_PREFIX}}-human-[manager-name]` | 16 | Kevin's style and priorities |
 | `dx-agent-iris` | 10 | Iris working memory |
 | `{{ORG_PREFIX}}-agent-leo` | 0 | Leo private working memory |
 | `{{ORG_PREFIX}}-internal` | 0 | Cross-agent team ops |

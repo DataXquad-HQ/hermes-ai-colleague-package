@@ -12,10 +12,10 @@ triggers:
   - "meeting tomorrow"
   - "I'll be talking to them on"
   - "create report back task"
-  - "report back task"
-  - "next week's meeting"
-  - "call tomorrow"
-  - "arranged a demo"
+  - "報回 task"
+  - "下週有個 meeting"
+  - "明天有通電話"
+  - "安排了一個 demo"
 version: "1.0"
 author: {{COMPANY_NAME}}/Leo
 ---
@@ -154,9 +154,9 @@ mutation {
 
 After creating:
 
-> "Report-Back Task created:
+> 「已幫你建好報回 Task：
 > 📅 **[Log Interaction] CompanyName — Call on June 17**
-> Message me after the call with what happened and I'll log it for you."
+> 到時候通完話跟我說一下結果，我來幫你記進去。」
 
 ---
 
@@ -173,6 +173,13 @@ For each overdue Task with title starting with "[Log Interaction]":
 ```
 
 This is how Leo maintains the detection loop without asking the Sales Rep to remember to report.
+
+> **Who runs the detection loop?**
+> The `sending-daily-pipeline-reminder` cron (runs every morning) is responsible for
+> scanning overdue `[Log Interaction]` tasks and surfacing flags. This skill only
+> creates the task — it does not perform the detection. If overdue tasks are not
+> appearing in the daily briefing, check that the daily reminder cron is active and
+> that it is querying tasks with `status: TODO` and `dueAt` in the past.
 
 ---
 
@@ -200,6 +207,13 @@ This is how Leo maintains the detection loop without asking the Sales Rep to rem
 | Selecting correct Opportunity if multiple | ⚠️ Ask Sales Rep to confirm |
 
 ---
+
+## Fallback Behavior
+
+- **If CRM is unreachable**: do not silently skip; inform the Sales Rep: "CRM is currently unavailable — I wasn't able to create the Report-Back Task for [Company] [date]. Please remind me when CRM is back, or create it manually." Store the pending task detail in the session reply so it isn't lost.
+- **If no active Opportunity or Partnership is found for the company**: create the Task without a linked parent record; note in the Task body "No active Opportunity/Partnership found — task is unlinked"; inform the Sales Rep and ask if a new opportunity should be created.
+- **If multiple Opportunities match the company** and the Sales Rep hasn't specified: present the options and ask which one to link — do not default to the first match.
+- **If the meeting date is ambiguous** (e.g. "next Tuesday") and Leo is uncertain: resolve it using today's date context; if still uncertain, ask once before creating the task — a wrong due date defeats the purpose of the detection loop.
 
 ## Pitfalls
 

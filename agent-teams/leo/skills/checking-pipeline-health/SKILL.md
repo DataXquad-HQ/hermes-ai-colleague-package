@@ -14,9 +14,9 @@ triggers:
   - "pipeline status"
   - "health check"
   - "C6"
-  - "is the pipeline healthy"
-  - "this week's pipeline review"
-  - "are we on target"
+  - "pipeline 健不健康"
+  - "本週 pipeline review"
+  - "我們達標嗎"
 ---
 
 # Pipeline Health Check Skill
@@ -64,8 +64,8 @@ icp = requests.post(
 
 Also read GBrain for structured numbers:
 ```python
-# Read directly: internal/business-lines/[bl]/strategy.md
-# Read directly: internal/business-lines/[bl]/strategy.md (pipeline benchmarks section)
+mcp_gbrain_get_page(slug="concepts/sales-goals")
+mcp_gbrain_get_page(slug="concepts/pipeline-benchmarks")
 ```
 
 **If strategy context is missing** (GBrain pages don't exist, Hindsight empty):
@@ -169,7 +169,7 @@ Sum all weighted values → **weighted pipeline value**.
 ### 4b — Gap to target
 
 ```python
-revenue_target = [from GBrain internal/business-lines/[bl]/strategy-summary]
+revenue_target = [from GBrain concepts/sales-goals]
 closed_won_revenue = sum of CUSTOMER opportunities this period
 remaining_target = revenue_target - closed_won_revenue
 pipeline_coverage = weighted_pipeline_value / remaining_target
@@ -184,7 +184,7 @@ For each opportunity and partnership:
 ```python
 from datetime import datetime, timezone
 
-stall_threshold_days = [from GBrain internal/business-lines/[bl]/pipeline-benchmarks-summary, default 30]
+stall_threshold_days = [from GBrain concepts/pipeline-benchmarks, default 30]
 days_in_stage = (datetime.now(timezone.utc) - datetime.fromisoformat(last_activity)).days
 is_stalled = days_in_stage > stall_threshold_days
 ```
@@ -219,7 +219,7 @@ For each opportunity missing `amount` or `closeDate`:
 ```graphql
 mutation {
   createTask(data: {
-    title: "[Fill in data] [Opportunity name] — please add estimated amount and expected close date"
+    title: "[補資料] [Opportunity name] — 請填入預估金額與預計成交日"
     body: { markdown: "**Opportunity:** [name]\n\n**Missing:** [amount / closeDate / both]\n\n**Why it matters:** Leo cannot calculate pipeline coverage without this data. Please update in CRM.\n\nCRM: {{CRM_EXTERNAL_URL}}/objects/opportunities/[UUID]" }
     status: TODO
     dueAt: "[tomorrow 09:00 CST]"
@@ -231,7 +231,7 @@ mutation {
 
 ## Step 7 — Output the Health Report
 
-Deliver to `[Sales] Pipeline Review` channel. **If you don't have the chat_id yet, store it in GBrain (`internal/business-lines/[bl]/sales-strategy-meta`) after the human provides it — do not write it into this skill file.** Format:
+Deliver to `[Sales] Pipeline Review` channel. **If you don't have the chat_id yet, store it in GBrain (`concepts/sales-strategy-meta`) after the human provides it — do not write it into this skill file.** Format:
 
 ```
 📊 Weekly Pipeline Health Check — [Date]
@@ -310,29 +310,10 @@ requests.post(
 
 | Channel | What goes here |
 |---|---|
-| `[Sales] Pipeline Review` (chat_id stored in `internal/business-lines/[bl]/sales-strategy-meta` in GBrain once confirmed) | Full Health Report — weekly |
+| `[Sales] Pipeline Review` (chat_id stored in `concepts/sales-strategy-meta` in GBrain once confirmed) | Full Health Report — weekly |
 | `[System] Backend Report` `{{SYSTEM_BACKEND_CHANNEL_ID}}` | Ops log — run stats, tasks created, errors |
 
 **CRM links always use** `{{CRM_EXTERNAL_URL}}/objects/[type]/[UUID]`.
-
----
-
-## Quality Bar
-
-Before posting the Health Report:
-- Every item in **RECOMMENDED ACTIONS** traceable to a specific opportunity, stage count, or CRM data point?
-- Coverage ratio clearly labelled as an estimate (benchmark probabilities, not actuals)?
-- HEALTHY/WATCH/AT_RISK/CRITICAL status includes the specific threshold it hit (e.g. "coverage 1.8x — below 2x threshold")?
-- DATA GAPS section lists every opportunity with missing `amount` or `closeDate`?
-
-If any check fails, fix before posting.
-
-## Fallback Behavior
-
-- **CRM unreachable** — do not produce fake pipeline numbers. State: "CRM unavailable — pipeline data could not be retrieved. Report cannot be generated." Post to `[System] Backend Report` only.
-- **GBrain strategy missing** — already handled in Step 1. Flag prominently; still produce the pipeline snapshot without coverage ratio.
-- **Hindsight empty** — produce report without benchmark comparison. Note: "No prior snapshots — trend analysis not available."
-- **amount/probability null on all opportunities** — state: "Insufficient data for weighted pipeline calculation. Coverage ratio cannot be computed." List all opportunities and their data quality status.
 
 ---
 
