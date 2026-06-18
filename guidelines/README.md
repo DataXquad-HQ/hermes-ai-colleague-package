@@ -32,6 +32,7 @@ If you need the concrete files that get installed, go to `../artifacts/`.
 |---|---|
 | `reference/architecture-overview.md` | Overall system and agent-team architecture |
 | `reference/agent-capability-doc-standard.md` | Standard for agent capability documentation |
+| `reference/shared-skill-model.md` | How shared canonical skills, selective installs, and agent-local skills are governed |
 | `reference/repo-structure-migration-map.md` | Old-path → new-path migration map for the package |
 
 ---
